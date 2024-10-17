@@ -1,0 +1,926 @@
+{
+  "configuration" : { },
+  "description" : "описание продукта",
+  "documentation" : { },
+  "id" : 1,
+  "lastModifiedAgent" : "structurizr-ui",
+  "lastModifiedDate" : "2024-10-17T21:21:53Z",
+  "model" : {
+    "deploymentNodes" : [ {
+      "children" : [ {
+        "containerInstances" : [ {
+          "containerId" : "17",
+          "deploymentGroups" : [ "Default" ],
+          "environment" : "Production",
+          "id" : "29",
+          "instanceId" : 1,
+          "properties" : {
+            "structurizr.dsl.identifier" : "167154cb-24a2-4ef8-9685-63fc1a98702b.08ce0d22-7779-4503-8e79-40883d6b77c1.b45e4679-b985-4726-a3d1-868bee0df963.a3a29c05-394e-49d0-83da-938a6ab561b5"
+          },
+          "relationships" : [ {
+            "description" : "Получение/изменение контента курсов",
+            "destinationId" : "36",
+            "id" : "37",
+            "linkedRelationshipId" : "18",
+            "sourceId" : "29",
+            "technology" : "HTTPS"
+          } ],
+          "tags" : "Container Instance"
+        } ],
+        "environment" : "Production",
+        "id" : "28",
+        "instances" : "2",
+        "name" : "NGinx Server",
+        "properties" : {
+          "structurizr.dsl.identifier" : "167154cb-24a2-4ef8-9685-63fc1a98702b.08ce0d22-7779-4503-8e79-40883d6b77c1.b45e4679-b985-4726-a3d1-868bee0df963"
+        },
+        "tags" : "Element,Deployment Node"
+      } ],
+      "environment" : "Production",
+      "id" : "27",
+      "instances" : "1",
+      "name" : "DMZ",
+      "properties" : {
+        "structurizr.dsl.identifier" : "167154cb-24a2-4ef8-9685-63fc1a98702b.08ce0d22-7779-4503-8e79-40883d6b77c1"
+      },
+      "tags" : "Element,Deployment Node"
+    }, {
+      "children" : [ {
+        "containerInstances" : [ {
+          "containerId" : "6",
+          "deploymentGroups" : [ "Default" ],
+          "environment" : "Production",
+          "id" : "33",
+          "instanceId" : 1,
+          "properties" : {
+            "structurizr.dsl.identifier" : "167154cb-24a2-4ef8-9685-63fc1a98702b.21b03e7b-00ef-4e5b-a5cc-9025719bcf6d.dn_db.1b49545b-8dcc-46ab-acb1-18e07e4cab39"
+          },
+          "tags" : "Container Instance"
+        } ],
+        "environment" : "Production",
+        "id" : "32",
+        "instances" : "1",
+        "name" : "Database Server",
+        "properties" : {
+          "structurizr.dsl.identifier" : "167154cb-24a2-4ef8-9685-63fc1a98702b.21b03e7b-00ef-4e5b-a5cc-9025719bcf6d.dn_db"
+        },
+        "relationships" : [ {
+          "description" : "Backup",
+          "destinationId" : "31",
+          "id" : "34",
+          "properties" : {
+            "structurizr.dsl.identifier" : "6dcde4d8-518d-41fa-bbda-f5504163d903"
+          },
+          "sourceId" : "32",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Deployment Node"
+      }, {
+        "containerInstances" : [ {
+          "containerId" : "11",
+          "deploymentGroups" : [ "Default" ],
+          "environment" : "Production",
+          "id" : "36",
+          "instanceId" : 1,
+          "properties" : {
+            "structurizr.dsl.identifier" : "167154cb-24a2-4ef8-9685-63fc1a98702b.21b03e7b-00ef-4e5b-a5cc-9025719bcf6d.ace42ad2-e167-4eb8-8c6b-e620c01972de.e6c882d9-f6a1-493c-9ee2-a8d4c837a180"
+          },
+          "relationships" : [ {
+            "description" : "Создание/удаление курса",
+            "destinationId" : "39",
+            "id" : "40",
+            "linkedRelationshipId" : "12",
+            "sourceId" : "36",
+            "technology" : "HTTPS"
+          }, {
+            "description" : "Создание/удаление контента",
+            "destinationId" : "43",
+            "id" : "44",
+            "linkedRelationshipId" : "13",
+            "sourceId" : "36",
+            "technology" : "HTTPS"
+          } ],
+          "tags" : "Container Instance"
+        } ],
+        "environment" : "Production",
+        "id" : "35",
+        "instances" : "3",
+        "name" : "k8s pod backend",
+        "properties" : {
+          "structurizr.dsl.identifier" : "167154cb-24a2-4ef8-9685-63fc1a98702b.21b03e7b-00ef-4e5b-a5cc-9025719bcf6d.ace42ad2-e167-4eb8-8c6b-e620c01972de"
+        },
+        "tags" : "Element,Deployment Node"
+      }, {
+        "containerInstances" : [ {
+          "containerId" : "7",
+          "deploymentGroups" : [ "Default" ],
+          "environment" : "Production",
+          "id" : "39",
+          "instanceId" : 1,
+          "properties" : {
+            "structurizr.dsl.identifier" : "167154cb-24a2-4ef8-9685-63fc1a98702b.21b03e7b-00ef-4e5b-a5cc-9025719bcf6d.2e473e78-a86f-4854-bcf1-9dde95755453.24979a01-12ce-4ddd-93b5-fae72bb7799c"
+          },
+          "relationships" : [ {
+            "description" : "сохранение и получение информации о курсе",
+            "destinationId" : "33",
+            "id" : "41",
+            "linkedRelationshipId" : "8",
+            "sourceId" : "39",
+            "technology" : "JDBC"
+          } ],
+          "tags" : "Container Instance"
+        } ],
+        "environment" : "Production",
+        "id" : "38",
+        "instances" : "1",
+        "name" : "k8s pod subject",
+        "properties" : {
+          "structurizr.dsl.identifier" : "167154cb-24a2-4ef8-9685-63fc1a98702b.21b03e7b-00ef-4e5b-a5cc-9025719bcf6d.2e473e78-a86f-4854-bcf1-9dde95755453"
+        },
+        "tags" : "Element,Deployment Node"
+      }, {
+        "containerInstances" : [ {
+          "containerId" : "9",
+          "deploymentGroups" : [ "Default" ],
+          "environment" : "Production",
+          "id" : "43",
+          "instanceId" : 1,
+          "properties" : {
+            "structurizr.dsl.identifier" : "167154cb-24a2-4ef8-9685-63fc1a98702b.21b03e7b-00ef-4e5b-a5cc-9025719bcf6d.1fa678c6-ffd4-4281-82e0-f382c4683d45.69cc6846-cc9f-4b04-8c32-b34006f35f23"
+          },
+          "relationships" : [ {
+            "description" : "сохранение и получение информации о контенте курса",
+            "destinationId" : "33",
+            "id" : "45",
+            "linkedRelationshipId" : "10",
+            "sourceId" : "43",
+            "technology" : "JDBC"
+          } ],
+          "tags" : "Container Instance"
+        } ],
+        "environment" : "Production",
+        "id" : "42",
+        "instances" : "1",
+        "name" : "k8s pod content",
+        "properties" : {
+          "structurizr.dsl.identifier" : "167154cb-24a2-4ef8-9685-63fc1a98702b.21b03e7b-00ef-4e5b-a5cc-9025719bcf6d.1fa678c6-ffd4-4281-82e0-f382c4683d45"
+        },
+        "tags" : "Element,Deployment Node"
+      } ],
+      "environment" : "Production",
+      "id" : "30",
+      "infrastructureNodes" : [ {
+        "environment" : "Production",
+        "id" : "31",
+        "name" : "Backup Database Server",
+        "properties" : {
+          "structurizr.dsl.identifier" : "167154cb-24a2-4ef8-9685-63fc1a98702b.21b03e7b-00ef-4e5b-a5cc-9025719bcf6d.in_db"
+        },
+        "tags" : "Element,Infrastructure Node"
+      } ],
+      "instances" : "1",
+      "name" : "Inside",
+      "properties" : {
+        "structurizr.dsl.identifier" : "167154cb-24a2-4ef8-9685-63fc1a98702b.21b03e7b-00ef-4e5b-a5cc-9025719bcf6d"
+      },
+      "tags" : "Element,Deployment Node"
+    } ],
+    "people" : [ {
+      "id" : "1",
+      "location" : "Unspecified",
+      "name" : "Студент",
+      "properties" : {
+        "structurizr.dsl.identifier" : "u1"
+      },
+      "relationships" : [ {
+        "description" : "Скачать материалы/задания и закачать результаты практики",
+        "destinationId" : "17",
+        "id" : "19",
+        "properties" : {
+          "structurizr.dsl.identifier" : "cb6886fe-aee8-4261-9c49-43d3fe5ed52a"
+        },
+        "sourceId" : "1",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Скачать материалы/задания и закачать результаты практики",
+        "destinationId" : "4",
+        "id" : "20",
+        "linkedRelationshipId" : "19",
+        "sourceId" : "1"
+      }, {
+        "description" : "Получает задание, смотрит материалы, отправляет лр",
+        "destinationId" : "4",
+        "id" : "23",
+        "properties" : {
+          "structurizr.dsl.identifier" : "46f382bd-3639-4f78-aa8d-d702973374ac"
+        },
+        "sourceId" : "1",
+        "tags" : "Relationship"
+      }, {
+        "description" : "слушает лекцию",
+        "destinationId" : "3",
+        "id" : "25",
+        "properties" : {
+          "structurizr.dsl.identifier" : "d83f2bf5-d2d0-4e86-aca1-089841dfaddf"
+        },
+        "sourceId" : "1",
+        "tags" : "Relationship,video"
+      } ],
+      "tags" : "Element,Person"
+    }, {
+      "id" : "2",
+      "location" : "Unspecified",
+      "name" : "Преподаватель",
+      "properties" : {
+        "structurizr.dsl.identifier" : "u2"
+      },
+      "relationships" : [ {
+        "description" : "Загрузить материалы/задания и оценить результаты практики",
+        "destinationId" : "17",
+        "id" : "21",
+        "properties" : {
+          "structurizr.dsl.identifier" : "63c6d04b-6263-4319-9a6b-504b651cc813"
+        },
+        "sourceId" : "2",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Загрузить материалы/задания и оценить результаты практики",
+        "destinationId" : "4",
+        "id" : "22",
+        "linkedRelationshipId" : "21",
+        "sourceId" : "2"
+      }, {
+        "description" : "Создает контент курса, проверяет задания студентов",
+        "destinationId" : "4",
+        "id" : "24",
+        "properties" : {
+          "structurizr.dsl.identifier" : "2e40c510-ff36-4327-a0b8-748ecf565fc8"
+        },
+        "sourceId" : "2",
+        "tags" : "Relationship"
+      }, {
+        "description" : "читает лекцию",
+        "destinationId" : "3",
+        "id" : "26",
+        "properties" : {
+          "structurizr.dsl.identifier" : "bf6b953c-4655-4d2c-9602-60ba32ad89f2"
+        },
+        "sourceId" : "2",
+        "tags" : "Relationship,video"
+      } ],
+      "tags" : "Element,Person"
+    } ],
+    "softwareSystems" : [ {
+      "documentation" : { },
+      "id" : "3",
+      "location" : "Unspecified",
+      "name" : "BigBlueButton",
+      "properties" : {
+        "structurizr.dsl.identifier" : "s1"
+      },
+      "tags" : "Element,Software System"
+    }, {
+      "containers" : [ {
+        "documentation" : { },
+        "id" : "6",
+        "name" : "Database",
+        "properties" : {
+          "structurizr.dsl.identifier" : "s2.db"
+        },
+        "tags" : "Element,Container",
+        "technology" : "PostgreSQL 14"
+      }, {
+        "documentation" : { },
+        "id" : "7",
+        "name" : "Subject",
+        "properties" : {
+          "structurizr.dsl.identifier" : "s2.subject"
+        },
+        "relationships" : [ {
+          "description" : "сохранение и получение информации о курсе",
+          "destinationId" : "6",
+          "id" : "8",
+          "properties" : {
+            "structurizr.dsl.identifier" : "3facee91-5fb6-448a-b6d6-75960865ac27"
+          },
+          "sourceId" : "7",
+          "tags" : "Relationship",
+          "technology" : "JDBC"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Java Spring"
+      }, {
+        "documentation" : { },
+        "id" : "9",
+        "name" : "Content",
+        "properties" : {
+          "structurizr.dsl.identifier" : "s2.content"
+        },
+        "relationships" : [ {
+          "description" : "сохранение и получение информации о контенте курса",
+          "destinationId" : "6",
+          "id" : "10",
+          "properties" : {
+            "structurizr.dsl.identifier" : "93769545-4a7c-4db9-9458-db0935479d91"
+          },
+          "sourceId" : "9",
+          "tags" : "Relationship",
+          "technology" : "JDBC"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Java Spring"
+      }, {
+        "components" : [ {
+          "documentation" : { },
+          "id" : "15",
+          "name" : "Single Sign On",
+          "properties" : {
+            "structurizr.dsl.identifier" : "s2.be.c1"
+          },
+          "tags" : "Element,Component"
+        }, {
+          "documentation" : { },
+          "id" : "16",
+          "name" : "Logging Adpater",
+          "properties" : {
+            "structurizr.dsl.identifier" : "s2.be.c2"
+          },
+          "tags" : "Element,Component"
+        } ],
+        "documentation" : { },
+        "id" : "11",
+        "name" : "API Gateway",
+        "properties" : {
+          "structurizr.dsl.identifier" : "s2.be"
+        },
+        "relationships" : [ {
+          "description" : "Создание/удаление курса",
+          "destinationId" : "7",
+          "id" : "12",
+          "properties" : {
+            "structurizr.dsl.identifier" : "542397cc-6faa-42e9-a1b0-3860ef529ef9"
+          },
+          "sourceId" : "11",
+          "tags" : "Relationship",
+          "technology" : "HTTPS"
+        }, {
+          "description" : "Создание/удаление контента",
+          "destinationId" : "9",
+          "id" : "13",
+          "properties" : {
+            "structurizr.dsl.identifier" : "8439e0d4-9ff2-4591-8299-54c88f9b47fb"
+          },
+          "sourceId" : "11",
+          "tags" : "Relationship",
+          "technology" : "HTTPS"
+        }, {
+          "description" : "Запустить конференцию",
+          "destinationId" : "3",
+          "id" : "14",
+          "properties" : {
+            "structurizr.dsl.identifier" : "b1c9611b-a6ab-470e-a065-21487716a71a"
+          },
+          "sourceId" : "11",
+          "tags" : "Relationship",
+          "technology" : "HTTPS"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Java Spring Cloud Gateway"
+      }, {
+        "documentation" : { },
+        "id" : "17",
+        "name" : "Single Page Application",
+        "properties" : {
+          "structurizr.dsl.identifier" : "s2.fe"
+        },
+        "relationships" : [ {
+          "description" : "Получение/изменение контента курсов",
+          "destinationId" : "11",
+          "id" : "18",
+          "properties" : {
+            "structurizr.dsl.identifier" : "d349ffec-a650-4a14-b4be-2c2042c1a714"
+          },
+          "sourceId" : "17",
+          "tags" : "Relationship",
+          "technology" : "HTTPS"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "JS, React"
+      } ],
+      "documentation" : { },
+      "id" : "4",
+      "location" : "Unspecified",
+      "name" : "LMS",
+      "properties" : {
+        "structurizr.dsl.identifier" : "s2"
+      },
+      "relationships" : [ {
+        "description" : "Запуск конференции в bigBlueButton",
+        "destinationId" : "3",
+        "id" : "5",
+        "properties" : {
+          "structurizr.dsl.identifier" : "ee921d97-d66e-442e-99fa-b7dbc661d0af"
+        },
+        "sourceId" : "4",
+        "tags" : "Relationship"
+      } ],
+      "tags" : "Element,Software System"
+    } ]
+  },
+  "name" : "имя продукта",
+  "properties" : {
+    "structurizr.dsl" : "d29ya3NwYWNlIHsKICAgIG5hbWUgItC40LzRjyDQv9GA0L7QtNGD0LrRgtCwIgogICAgZGVzY3JpcHRpb24gItC+0L/QuNGB0LDQvdC40LUg0L/RgNC+0LTRg9C60YLQsCIKCiAgICAjINCy0LrQu9GO0YfQsNC10Lwg0YDQtdC20LjQvCDRgSDQuNC10YDQsNGA0YXQuNGH0LXRgdC60L7QuSDRgdC40YHRgtC10LzQvtC5INC40LTQtdC90YLQuNGE0LjQutCw0YLQvtGA0L7QsgogICAgIWlkZW50aWZpZXJzIGhpZXJhcmNoaWNhbAoKICAgIG1vZGVsIHsKCiAgICAgICAgdTEgPSBwZXJzb24gItCh0YLRg9C00LXQvdGCIgogICAgICAgIHUyID0gcGVyc29uICLQn9GA0LXQv9C+0LTQsNCy0LDRgtC10LvRjCIKCiAgICAgICAgczEgPSBzb2Z0d2FyZVN5c3RlbSAiQmlnQmx1ZUJ1dHRvbiIKICAgICAgICBzMiA9IHNvZnR3YXJlU3lzdGVtICJMTVMiIHsKICAgICAgICAgICAgLT4gczEgItCX0LDQv9GD0YHQuiDQutC+0L3RhNC10YDQtdC90YbQuNC4INCyIGJpZ0JsdWVCdXR0b24iCgogICAgICAgICAgICBkYiA9IGNvbnRhaW5lciAiRGF0YWJhc2UiIHsKICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIlBvc3RncmVTUUwgMTQiCiAgICAgICAgICAgIH0KCiAgICAgICAgICAgIHN1YmplY3QgPSBjb250YWluZXIgIlN1YmplY3QiIHsKICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIkphdmEgU3ByaW5nIgogICAgICAgICAgICAgICAgLT4gZGIgItGB0L7RhdGA0LDQvdC10L3QuNC1INC4INC/0L7Qu9GD0YfQtdC90LjQtSDQuNC90YTQvtGA0LzQsNGG0LjQuCDQviDQutGD0YDRgdC1IiAiSkRCQyIKICAgICAgICAgICAgfQoKICAgICAgICAgICAgY29udGVudCA9IGNvbnRhaW5lciAiQ29udGVudCIgewogICAgICAgICAgICAgICAgdGVjaG5vbG9neSAiSmF2YSBTcHJpbmciCiAgICAgICAgICAgICAgICAtPiBkYiAi0YHQvtGF0YDQsNC90LXQvdC40LUg0Lgg0L/QvtC70YPRh9C10L3QuNC1INC40L3RhNC+0YDQvNCw0YbQuNC4INC+INC60L7QvdGC0LXQvdGC0LUg0LrRg9GA0YHQsCIgIkpEQkMiCiAgICAgICAgICAgIH0KCiAgICAgICAgICAgIGJlID0gY29udGFpbmVyICJBUEkgR2F0ZXdheSIgewogICAgICAgICAgICAgICAgLT4gc3ViamVjdCAi0KHQvtC30LTQsNC90LjQtS/Rg9C00LDQu9C10L3QuNC1INC60YPRgNGB0LAiICJIVFRQUyIKICAgICAgICAgICAgICAgIC0+IGNvbnRlbnQgItCh0L7Qt9C00LDQvdC40LUv0YPQtNCw0LvQtdC90LjQtSDQutC+0L3RgtC10L3RgtCwIiAiSFRUUFMiCiAgICAgICAgICAgICAgICAtPiBzMSAi0JfQsNC/0YPRgdGC0LjRgtGMINC60L7QvdGE0LXRgNC10L3RhtC40Y4iICJIVFRQUyIKICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIkphdmEgU3ByaW5nIENsb3VkIEdhdGV3YXkiCgogICAgICAgICAgICAgICAgYzEgPSBjb21wb25lbnQgIlNpbmdsZSBTaWduIE9uIiB7CgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICBjMiA9IGNvbXBvbmVudCAiTG9nZ2luZyBBZHBhdGVyIiB7CgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICB9CiAgICAgICAgICAgIGZlID0gY29udGFpbmVyICJTaW5nbGUgUGFnZSBBcHBsaWNhdGlvbiIgewogICAgICAgICAgICAgICAgdGVjaG5vbG9neSAiSlMsIFJlYWN0IgogICAgICAgICAgICAgICAgLT4gYmUgItCf0L7Qu9GD0YfQtdC90LjQtS/QuNC30LzQtdC90LXQvdC40LUg0LrQvtC90YLQtdC90YLQsCDQutGD0YDRgdC+0LIiICJIVFRQUyIKICAgICAgICAgICAgfQogICAgICAgIH0KCiAgICAgICAgdTEgLT4gczIuZmUgItCh0LrQsNGH0LDRgtGMINC80LDRgtC10YDQuNCw0LvRiy/Qt9Cw0LTQsNC90LjRjyDQuCDQt9Cw0LrQsNGH0LDRgtGMINGA0LXQt9GD0LvRjNGC0LDRgtGLINC/0YDQsNC60YLQuNC60LgiCiAgICAgICAgdTIgLT4gczIuZmUgItCX0LDQs9GA0YPQt9C40YLRjCDQvNCw0YLQtdGA0LjQsNC70Ysv0LfQsNC00LDQvdC40Y8g0Lgg0L7RhtC10L3QuNGC0Ywg0YDQtdC30YPQu9GM0YLQsNGC0Ysg0L/RgNCw0LrRgtC40LrQuCIKCgogICAgICAgIHUxIC0+IHMyICLQn9C+0LvRg9GH0LDQtdGCINC30LDQtNCw0L3QuNC1LCDRgdC80L7RgtGA0LjRgiDQvNCw0YLQtdGA0LjQsNC70YssINC+0YLQv9GA0LDQstC70Y/QtdGCINC70YAiCiAgICAgICAgdTIgLT4gczIgItCh0L7Qt9C00LDQtdGCINC60L7QvdGC0LXQvdGCINC60YPRgNGB0LAsINC/0YDQvtCy0LXRgNGP0LXRgiDQt9Cw0LTQsNC90LjRjyDRgdGC0YPQtNC10L3RgtC+0LIiCiAgICAgICAgdTEgLT4gczEgItGB0LvRg9GI0LDQtdGCINC70LXQutGG0LjRjiIgewogICAgICAgICAgICB0YWdzICJ2aWRlbyIKICAgICAgICB9CgogICAgICAgIHUyIC0+IHMxICLRh9C40YLQsNC10YIg0LvQtdC60YbQuNGOIiB7CiAgICAgICAgICAgIHRhZ3MgInZpZGVvIgogICAgICAgIH0KCgogICAgICAgIGRlcGxveW1lbnRFbnZpcm9ubWVudCAiUHJvZHVjdGlvbiIgewoKICAgICAgICAgICAgZGVwbG95bWVudE5vZGUgIkRNWiIgewogICAgICAgICAgICAgICAgZGVwbG95bWVudE5vZGUgIk5HaW54IFNlcnZlciIgewogICAgICAgICAgICAgICAgICAgIGNvbnRhaW5lckluc3RhbmNlIHMyLmZlCiAgICAgICAgICAgICAgICAgICAgaW5zdGFuY2VzIDIKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgfQoKICAgICAgICAgICAgZGVwbG95bWVudE5vZGUgIkluc2lkZSIgewoKICAgICAgICAgICAgICAgIGluX2RiID0gaW5mcmFzdHJ1Y3R1cmVOb2RlICJCYWNrdXAgRGF0YWJhc2UgU2VydmVyIiAKICAgICAgICAgICAgICAgIGRuX2RiID0gZGVwbG95bWVudE5vZGUgIkRhdGFiYXNlIFNlcnZlciIgewogICAgICAgICAgICAgICAgIGNvbnRhaW5lckluc3RhbmNlIHMyLmRiCiAgICAgICAgICAgICAgICAgLT4gaW5fZGIgIkJhY2t1cCIKICAgICAgICAgICAgICAgIH0KCiAgICAgICAgICAgICAgICBkZXBsb3ltZW50Tm9kZSAiazhzIHBvZCBiYWNrZW5kIiB7CiAgICAgICAgICAgICAgICAgY29udGFpbmVySW5zdGFuY2UgczIuYmUKICAgICAgICAgICAgICAgICBpbnN0YW5jZXMgMwogICAgICAgICAgICAgICAgfQoKICAgICAgICAgICAgICAgIGRlcGxveW1lbnROb2RlICJrOHMgcG9kIHN1YmplY3QiIHsKICAgICAgICAgICAgICAgICAgICBjb250YWluZXJJbnN0YW5jZSBzMi5zdWJqZWN0CiAgICAgICAgICAgICAgICB9CgogICAgICAgICAgICAgICAgZGVwbG95bWVudE5vZGUgIms4cyBwb2QgY29udGVudCIgewogICAgICAgICAgICAgICAgICAgIGNvbnRhaW5lckluc3RhbmNlIHMyLmNvbnRlbnQKICAgICAgICAgICAgICAgIH0KCiAgICAgICAgICAgIH0KCiAgICAgICAgfQogICAgICAgIAogICAgfQoKICAgIHZpZXdzIHsKCiAgICAgICAgZHluYW1pYyBzMiAidWMwMSIgItC/0L7Qu9GD0YfQtdC90LjQtSDQt9Cw0LTQsNC90LjRjyDQu9Cw0LHQvtGA0LDRgtC+0YDQvdC+0Lkg0YDQsNCx0L7RgtGLIiB7CiAgICAgICAgICAgIGF1dG9MYXlvdXQgbHIKCiAgICAgICAgICAgIHUxIC0+IHMyLmZlICLQntGC0LrRgNGL0YLRjCDRgdGC0YDQsNC90LjRhtGDINC60YPRgNGB0LAiCiAgICAgICAgICAgIHMyLmZlIC0+IHMyLmJlICJHRVQgL3N1YmplY3Qve2lkfSIKICAgICAgICAgICAgczIuYmUgLT4gczIuc3ViamVjdCAiR0VUIC9zdWJqZWN0L3tpZH0iCiAgICAgICAgICAgIHMyLnN1YmplY3QgLT4gczIuZGIgIlNFTEVDVCAqIEZST00gc3ViamVjdCBXSEVSRSBpZD17aWR9IgoKICAgICAgICAgICAgdTEgLT4gczIuZmUgItCX0LDQs9GA0YPQt9C40YLRjCDQm9CgIgogICAgICAgICAgICBzMi5mZSAtPiBzMi5iZSAiR0VUIC9jb250ZW50L3tpZH0iCiAgICAgICAgICAgIHMyLmJlIC0+IHMyLmNvbnRlbnQgIkdFVCAvY29udGVudC97aWR9IgogICAgICAgICAgICBzMi5jb250ZW50IC0+IHMyLmRiICJTRUxFQ1QgKiBGUk9NIGNvbnRlbnQgV0hFUkUgaWQ9e2lkfSIKICAgICAgICB9CgogICAgICAgIGR5bmFtaWMgczIgInVjMDIiICLQt9Cw0LPRgNGD0LfQuNGC0Ywg0YDQtdGI0LXQvdC40LUg0LvQsNCx0L7RgNCw0YLQvtGA0L3QvtC5INGA0LDQsdC+0YLRiyIgewogICAgICAgICAgICBhdXRvTGF5b3V0IGxyCgogICAgICAgICAgICB1MSAtPiBzMi5mZSAi0J7RgtC60YDRi9GC0Ywg0YHRgtGA0LDQvdC40YbRgyDQutGD0YDRgdCwIgogICAgICAgICAgICBzMi5mZSAtPiBzMi5iZSAiR0VUIC9zdWJqZWN0L3tpZH0iCiAgICAgICAgICAgIHMyLmJlIC0+IHMyLnN1YmplY3QgIkdFVCAvc3ViamVjdC97aWR9IgogICAgICAgICAgICBzMi5zdWJqZWN0IC0+IHMyLmRiICJTRUxFQ1QgKiBGUk9NIHN1YmplY3QgV0hFUkUgaWQ9e2lkfSIKCiAgICAgICAgICAgIHUxIC0+IHMyLmZlICLQl9Cw0LPRgNGD0LfQuNGC0Ywg0YDQtdGI0LXQvdC40LUg0JvQoCIKICAgICAgICAgICAgczIuZmUgLT4gczIuYmUgIlBPU1QgL2NvbnRlbnQve2lkfSIKICAgICAgICAgICAgczIuYmUgLT4gczIuY29udGVudCAiUE9TVCAvY29udGVudC97aWR9IgogICAgICAgICAgICBzMi5jb250ZW50IC0+IHMyLmRiICJJTlNFUlQgSU5UTyAgY29udGVudCAoLi4uKSBWQUxVRVMgKC4uLikiCiAgICAgICAgfQoKICAgICAgICB0aGVtZXMgZGVmYXVsdAogICAgICAgIHN5c3RlbUNvbnRleHQgczIgewogICAgICAgICAgICBpbmNsdWRlICoKICAgICAgICAgICAgZXhjbHVkZSByZWxhdGlvbnNoaXAudGFnPT12aWRlbwogICAgICAgICAgICBhdXRvTGF5b3V0CiAgICAgICAgfQoKICAgICAgICBjb250YWluZXIgczIgInZlcnRpY2FsIiB7CiAgICAgICAgICAgIGluY2x1ZGUgKgogICAgICAgICAgICBhdXRvTGF5b3V0CiAgICAgICAgfQoKICAgICAgICBjb250YWluZXIgczIgImhvdGl6b250YWwiIHsKICAgICAgICAgICAgaW5jbHVkZSAqCiAgICAgICAgICAgIGF1dG9MYXlvdXQgbHIKICAgICAgICB9CgogICAgICAgIGNvbXBvbmVudCBzMi5iZSB7CiAgICAgICAgICAgIGluY2x1ZGUgKgogICAgICAgICAgICBhdXRvTGF5b3V0IGxyCiAgICAgICAgfQoKICAgICAgICBkZXBsb3ltZW50ICogIlByb2R1Y3Rpb24iIHsKICAgICAgICAgICAgaW5jbHVkZSAqCiAgICAgICAgICAgIGF1dG9MYXlvdXQKCiAgICAgICAgfQoKCiAgICB9Cn0="
+  },
+  "views" : {
+    "componentViews" : [ {
+      "automaticLayout" : {
+        "applied" : false,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "containerId" : "11",
+      "elements" : [ {
+        "id" : "15",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "16",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "generatedKey" : true,
+      "key" : "Component-001",
+      "order" : 6
+    } ],
+    "configuration" : {
+      "branding" : { },
+      "lastSavedView" : "hotizontal",
+      "metadataSymbols" : "SquareBrackets",
+      "styles" : { },
+      "terminology" : { },
+      "themes" : [ "https://static.structurizr.com/themes/default/theme.json" ]
+    },
+    "containerViews" : [ {
+      "automaticLayout" : {
+        "applied" : false,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "2",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "3",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "6",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "7",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "9",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "11",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "17",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalSoftwareSystemBoundariesVisible" : false,
+      "key" : "vertical",
+      "order" : 4,
+      "relationships" : [ {
+        "id" : "10"
+      }, {
+        "id" : "12"
+      }, {
+        "id" : "13"
+      }, {
+        "id" : "14"
+      }, {
+        "id" : "18"
+      }, {
+        "id" : "19"
+      }, {
+        "id" : "21"
+      }, {
+        "id" : "25"
+      }, {
+        "id" : "26"
+      }, {
+        "id" : "8"
+      } ],
+      "softwareSystemId" : "4"
+    }, {
+      "automaticLayout" : {
+        "applied" : true,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "dimensions" : {
+        "height" : 2441,
+        "width" : 3870
+      },
+      "elements" : [ {
+        "id" : "1",
+        "x" : 200,
+        "y" : 954
+      }, {
+        "id" : "2",
+        "x" : 200,
+        "y" : 200
+      }, {
+        "id" : "3",
+        "x" : 2450,
+        "y" : 650
+      }, {
+        "id" : "6",
+        "x" : 3200,
+        "y" : 1550
+      }, {
+        "id" : "7",
+        "x" : 2450,
+        "y" : 1850
+      }, {
+        "id" : "9",
+        "x" : 2450,
+        "y" : 1250
+      }, {
+        "id" : "11",
+        "x" : 1700,
+        "y" : 1254
+      }, {
+        "id" : "17",
+        "x" : 950,
+        "y" : 1254
+      } ],
+      "externalSoftwareSystemBoundariesVisible" : false,
+      "key" : "hotizontal",
+      "order" : 5,
+      "relationships" : [ {
+        "id" : "10"
+      }, {
+        "id" : "12"
+      }, {
+        "id" : "13"
+      }, {
+        "id" : "14"
+      }, {
+        "id" : "18"
+      }, {
+        "id" : "19"
+      }, {
+        "id" : "21"
+      }, {
+        "id" : "25"
+      }, {
+        "id" : "26",
+        "vertices" : [ {
+          "x" : 2150,
+          "y" : 671
+        } ]
+      }, {
+        "id" : "8"
+      } ],
+      "softwareSystemId" : "4"
+    } ],
+    "deploymentViews" : [ {
+      "automaticLayout" : {
+        "applied" : true,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "dimensions" : {
+        "height" : 3381,
+        "width" : 1692
+      },
+      "elements" : [ {
+        "id" : "27",
+        "x" : 175,
+        "y" : 175
+      }, {
+        "id" : "28",
+        "x" : 175,
+        "y" : 175
+      }, {
+        "id" : "29",
+        "x" : 239,
+        "y" : 239
+      }, {
+        "id" : "30",
+        "x" : 175,
+        "y" : 175
+      }, {
+        "id" : "31",
+        "x" : 618,
+        "y" : 2789
+      }, {
+        "id" : "32",
+        "x" : 175,
+        "y" : 175
+      }, {
+        "id" : "33",
+        "x" : 618,
+        "y" : 2189
+      }, {
+        "id" : "35",
+        "x" : 175,
+        "y" : 175
+      }, {
+        "id" : "36",
+        "x" : 239,
+        "y" : 989
+      }, {
+        "id" : "38",
+        "x" : 175,
+        "y" : 175
+      }, {
+        "id" : "39",
+        "x" : 239,
+        "y" : 1589
+      }, {
+        "id" : "42",
+        "x" : 175,
+        "y" : 175
+      }, {
+        "id" : "43",
+        "x" : 1001,
+        "y" : 1589
+      } ],
+      "environment" : "Production",
+      "generatedKey" : true,
+      "key" : "Deployment-001",
+      "order" : 7,
+      "relationships" : [ {
+        "id" : "34"
+      }, {
+        "id" : "37"
+      }, {
+        "id" : "40"
+      }, {
+        "id" : "41"
+      }, {
+        "id" : "44"
+      }, {
+        "id" : "45"
+      } ]
+    } ],
+    "dynamicViews" : [ {
+      "automaticLayout" : {
+        "applied" : false,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "description" : "получение задания лабораторной работы",
+      "elementId" : "4",
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "6",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "7",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "9",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "11",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "17",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalBoundariesVisible" : false,
+      "key" : "uc01",
+      "order" : 1,
+      "relationships" : [ {
+        "description" : "Открыть страницу курса",
+        "id" : "19",
+        "order" : "1",
+        "response" : false
+      }, {
+        "description" : "GET /subject/{id}",
+        "id" : "18",
+        "order" : "2",
+        "response" : false
+      }, {
+        "description" : "GET /subject/{id}",
+        "id" : "12",
+        "order" : "3",
+        "response" : false
+      }, {
+        "description" : "SELECT * FROM subject WHERE id={id}",
+        "id" : "8",
+        "order" : "4",
+        "response" : false
+      }, {
+        "description" : "Загрузить ЛР",
+        "id" : "19",
+        "order" : "5",
+        "response" : false
+      }, {
+        "description" : "GET /content/{id}",
+        "id" : "18",
+        "order" : "6",
+        "response" : false
+      }, {
+        "description" : "GET /content/{id}",
+        "id" : "13",
+        "order" : "7",
+        "response" : false
+      }, {
+        "description" : "SELECT * FROM content WHERE id={id}",
+        "id" : "10",
+        "order" : "8",
+        "response" : false
+      } ]
+    }, {
+      "automaticLayout" : {
+        "applied" : false,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "description" : "загрузить решение лабораторной работы",
+      "elementId" : "4",
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "6",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "7",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "9",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "11",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "17",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalBoundariesVisible" : false,
+      "key" : "uc02",
+      "order" : 2,
+      "relationships" : [ {
+        "description" : "Открыть страницу курса",
+        "id" : "19",
+        "order" : "1",
+        "response" : false
+      }, {
+        "description" : "GET /subject/{id}",
+        "id" : "18",
+        "order" : "2",
+        "response" : false
+      }, {
+        "description" : "GET /subject/{id}",
+        "id" : "12",
+        "order" : "3",
+        "response" : false
+      }, {
+        "description" : "SELECT * FROM subject WHERE id={id}",
+        "id" : "8",
+        "order" : "4",
+        "response" : false
+      }, {
+        "description" : "Загрузить решение ЛР",
+        "id" : "19",
+        "order" : "5",
+        "response" : false
+      }, {
+        "description" : "POST /content/{id}",
+        "id" : "18",
+        "order" : "6",
+        "response" : false
+      }, {
+        "description" : "POST /content/{id}",
+        "id" : "13",
+        "order" : "7",
+        "response" : false
+      }, {
+        "description" : "INSERT INTO  content (...) VALUES (...)",
+        "id" : "10",
+        "order" : "8",
+        "response" : false
+      } ]
+    } ],
+    "systemContextViews" : [ {
+      "automaticLayout" : {
+        "applied" : true,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "dimensions" : {
+        "height" : 1900,
+        "width" : 1550
+      },
+      "elements" : [ {
+        "id" : "1",
+        "x" : 200,
+        "y" : 200
+      }, {
+        "id" : "2",
+        "x" : 950,
+        "y" : 200
+      }, {
+        "id" : "3",
+        "x" : 575,
+        "y" : 1400
+      }, {
+        "id" : "4",
+        "x" : 575,
+        "y" : 800
+      } ],
+      "enterpriseBoundaryVisible" : true,
+      "generatedKey" : true,
+      "key" : "SystemContext-001",
+      "order" : 3,
+      "relationships" : [ {
+        "id" : "20",
+        "vertices" : [ {
+          "x" : 478,
+          "y" : 763
+        } ]
+      }, {
+        "id" : "22",
+        "vertices" : [ {
+          "x" : 848,
+          "y" : 594
+        } ]
+      }, {
+        "id" : "23",
+        "vertices" : [ {
+          "x" : 721,
+          "y" : 586
+        } ]
+      }, {
+        "id" : "24",
+        "vertices" : [ {
+          "x" : 1101,
+          "y" : 755
+        } ]
+      }, {
+        "id" : "5"
+      } ],
+      "softwareSystemId" : "4"
+    } ]
+  }
+}
