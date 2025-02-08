@@ -16,6 +16,7 @@ workspace {
 
             db = container "Database" {
                 technology "PostgreSQL 14"
+                tags "Database"
             }
 
             subject = container "Subject" {
@@ -70,15 +71,15 @@ workspace {
                     containerInstance s2.fe
                     instances 2
                 }
-            }
-
-            deploymentNode "Inside" {
-
                 in_db = infrastructureNode "Backup Database Server" 
                 dn_db = deploymentNode "Database Server" {
                  containerInstance s2.db
                  -> in_db "Backup"
                 }
+
+            }
+
+            deploymentNode "Inside" {
 
                 deploymentNode "k8s pod backend" {
                  containerInstance s2.be
