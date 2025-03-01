@@ -2,8 +2,8 @@ from neo4j import GraphDatabase
 import json
 
 NEO4J_URI = "bolt://localhost:7687"
-NEO4J_USER = "GoydaGoyda"
-NEO4J_PASSWORD = "GoydaGoyda"
+NEO4J_USER = "USERNAME"
+NEO4J_PASSWORD = "PASSWORD"
 
 STRUCTURIZR_JSON_PATH = "workspace.json"
 
@@ -43,11 +43,10 @@ def extract_elements_and_relationships(model):
             'type': 'Person',
             'name': person['name'],
             'properties': person.get('properties', {}),
-            'tags': parse_tags(person.get('tags', ''))  # разбиение тегов
+            'tags': parse_tags(person.get('tags', ''))
         })
         relationships.extend(person.get('relationships', []))
 
-    # 2) SoftwareSystems + вложенные контейнеры и компоненты
     for system in model['model'].get('softwareSystems', []):
         elements.append({
             'id': system['id'],
@@ -85,11 +84,9 @@ def extract_elements_and_relationships(model):
                 })
                 relationships.extend(component.get('relationships', []))
 
-    # 3) DeploymentNodes (рекурсивный разбор)
     for deployment_node in model['model'].get('deploymentNodes', []):
         process_deployment_node(deployment_node, elements, relationships)
 
-    # 4) Глобальные relationships (если есть)
     relationships.extend(model['model'].get('relationships', []))
 
     return elements, relationships
@@ -106,7 +103,6 @@ def process_deployment_node(node, elements, relationships, parent_id=None):
     tags = node.get('tags', '')
     environment = node.get('environment', '')
 
-    # Сам deploymentNode
     elements.append({
         'id': node_id,
         'type': node_type,
@@ -117,7 +113,6 @@ def process_deployment_node(node, elements, relationships, parent_id=None):
         'environment': environment
     })
 
-    # Связь CONTAINS, если есть родитель
     if parent_id:
         relationships.append({
             'sourceId': parent_id,
@@ -145,24 +140,20 @@ def process_deployment_node(node, elements, relationships, parent_id=None):
             'properties': container_instance.get('properties', {}),
             'tags': parse_tags(container_instance.get('tags', '')),
             'environment': container_instance.get('environment', ''),
-            # Дополнительные поля:
             'containerId': container_id,
-            'containerName': container_id,  # Аналогичная информация
+            'containerName': container_id,
             'instanceCount': instance_count
         })
 
-        # Связь INSTANCE_OF между инстансом и самим контейнером
         relationships.append({
             'sourceId': ci_id,
             'destinationId': container_id,
             'description': 'InstanceOf',
             'type': 'INSTANCE_OF'
         })
-
-        # Если у containerInstance есть свои relationships
+        
         relationships.extend(container_instance.get('relationships', []))
 
-    # Обрабатываем infrastructureNodes
     for infra_node in node.get('infrastructureNodes', []):
         infra_id = infra_node['id']
         elements.append({
@@ -193,12 +184,9 @@ def import_elements(tx, elements):
         element_type = element.get('type')
         properties = element.get('properties', {})
         tags = element.get('tags', [])
-        # technology здесь будет уже списком (после parse_technologies)
         technology = element.get('technology', [])
         environment = element.get('environment', '')
         parent_id = element.get('parentId', None)
-
-        # Доп. поля для ContainerInstance
         container_id = element.get('containerId', None)
         container_name = element.get('containerName', None)
         instance_count = element.get('instanceCount', None)
@@ -207,7 +195,6 @@ def import_elements(tx, elements):
             print(f"Предупреждение: неизвестный тип узла '{element_type}'. Узел пропущен.")
             continue
 
-        # Базовый MERGE для узла
         query = (
             f"MERGE (n:{element_type} {{id: $id}}) "
             "SET n.name = $name, n.tags = $tags, n += $properties "
@@ -220,7 +207,6 @@ def import_elements(tx, elements):
             'properties': properties
         }
 
-        # Устанавливаем technology как список
         if technology:
             query += "SET n.technology = $technology "
             params['technology'] = technology
@@ -229,7 +215,6 @@ def import_elements(tx, elements):
             query += "SET n.environment = $environment "
             params['environment'] = environment
 
-        # Если это ContainerInstance — добавим спец. поля
         if element_type == 'ContainerInstance':
             if container_name:
                 query += "SET n.containerName = $containerName "
@@ -240,7 +225,6 @@ def import_elements(tx, elements):
 
         tx.run(query, **params)
 
-        # Связь CONTAINS (родитель->ребёнок) для иерархии в Structurizr
         if parent_id:
             tx.run(
                 "MATCH (parent {id: $parent_id}), (child {id: $child_id}) "
@@ -261,7 +245,6 @@ def import_relationships(tx, relationships):
         description = relationship.get('description', '')
         technology = relationship.get('technology', '')
         properties = relationship.get('properties', {})
-        # Теги у связей тоже можно парсить, если нужно
         tags = parse_tags(relationship.get('tags', ''))
         rel_type = relationship.get('type', 'RELATES_TO')
         rel_id = relationship.get('id')
