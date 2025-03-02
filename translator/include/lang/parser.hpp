@@ -69,7 +69,9 @@ struct identifier : lexy::token_production
             const auto kw_xor = LEXY_KEYWORD("xor", id);
             const auto kw_all = LEXY_KEYWORD("all", id);
             const auto kw_exist = LEXY_KEYWORD("exist", id);
-            return id.reserve(kw_not, kw_in, kw_or, kw_and, kw_xor, kw_all, kw_exist);
+            const auto kw_true = LEXY_KEYWORD("true", id);
+            const auto kw_false = LEXY_KEYWORD("false", id);
+            return id.reserve(kw_not, kw_in, kw_or, kw_and, kw_xor, kw_all, kw_exist, kw_true, kw_false);
     }();
     static constexpr auto value = lexy::as_string<std::string>;
 };
@@ -300,14 +302,24 @@ struct expression : lexy::expression_production
     );
 };
 
+struct nested_statement : lexy::transparent_production
+{
+    static constexpr auto whitespace = dsl::ascii::newline | dsl::ascii::space;
+    static constexpr auto rule = dsl::recurse<struct statement>;
+    static constexpr auto value = lexy::forward<ast::StatementPtr>;
+};
+
 struct statement
 {
     struct assignment
     {
-        static constexpr auto rule =
-            dsl::p<identifier> >> dsl::while_(dsl::ascii::space) >> dsl::lit_c<'='> >> dsl::while_(dsl::ascii::space) >> dsl::p<expression> >> dsl::while_(dsl::ascii::space) >> dsl::semicolon;
+        static constexpr auto rule = dsl::p<identifier> 
+            >> dsl::while_(dsl::ascii::space) 
+            >> dsl::lit_c<'='> 
+            >> dsl::while_(dsl::ascii::space) 
+            >> dsl::p<expression>;
         static constexpr auto value = lexy::callback<ast::StatementPtr>(
-            [](std::string name, ast::ExpressionPtr expr) -> ast::StatementPtr
+            [](std::string&& name, ast::ExpressionPtr&& expr) -> ast::StatementPtr
             {
                 auto asg = std::make_unique<ast::AssignmentStatement>(
                     std::move(name),
@@ -320,18 +332,27 @@ struct statement
 
     struct quantifier
     {
-        struct quantifier_token
+        struct quantifier_token_all
         {
-            static constexpr auto rule = LEXY_LIT("all") | LEXY_LIT("exist");
-            static constexpr auto value = lexy::as_string<std::string>;
+            static constexpr auto rule = LEXY_LIT("all");
+            static constexpr auto value = lexy::constant(ast::QuantifierType::All);
         };
 
-        static constexpr auto rule =
-            dsl::p<quantifier_token> >> dsl::curly_bracketed.opt_list(dsl::recurse<struct block>);
+        struct quantifier_token_exist
+        {
+            static constexpr auto rule = LEXY_LIT("exist");
+            static constexpr auto value = lexy::constant(ast::QuantifierType::Exist);
+        };
+
+        static constexpr auto rule = (dsl::p<quantifier_token_all> | dsl::p<quantifier_token_exist>)
+            >> dsl::while_(dsl::ascii::space | dsl::ascii::newline)
+            >> dsl::curly_bracketed(dsl::p<nested_statement>);
+
         static constexpr auto value = lexy::callback<ast::StatementPtr>(
-            [](std::string token, ast::BlockPtr block){
+            [](ast::QuantifierType&& type, ast::StatementPtr&& block) -> ast::StatementPtr
+            {
                 auto q = std::make_unique<ast::QuantifierStatement>(
-                    token == "all" ? ast::QuantifierType::All : ast::QuantifierType::Exist,
+                    type,
                     std::move(block)
                 );
                 return std::make_unique<ast::Statement>(std::move(q));
@@ -341,17 +362,29 @@ struct statement
 
     struct selection
     {
-        static constexpr auto rule =
-            dsl::p<identifier>
+        struct selection_list
+        {
+            static constexpr auto rule = dsl::list(
+                dsl::p<identifier> >> dsl::while_(dsl::ascii::space), 
+                dsl::sep(dsl::comma >> dsl::ascii::space));
+
+            static constexpr auto value = lexy::as_list<std::vector<std::string>>;
+        };
+
+        static constexpr auto rule = dsl::p<selection_list>
+            >> dsl::while_(dsl::ascii::space)
             >> LEXY_LIT("in")
+            >> dsl::while_(dsl::ascii::space)
             >> dsl::p<expression>
-            + dsl::lit_c<':'>
-            + dsl::recurse<struct block>;
+            >> dsl::while_(dsl::ascii::space)
+            >> dsl::lit_c<':'>
+            >> dsl::while_(dsl::ascii::space | dsl::ascii::newline)
+            >> dsl::p<nested_statement>;
 
         static constexpr auto value = lexy::callback<ast::StatementPtr>(
-            [](std::string varNames, ast::ExpressionPtr collection, ast::BlockPtr body) -> ast::StatementPtr{
+            [](std::vector<std::string>&& varNames, ast::ExpressionPtr collection, ast::StatementPtr body) -> ast::StatementPtr{
                 auto sel = std::make_unique<ast::SelectionStatement>(
-                    std::move(std::vector<std::string>{varNames}),
+                    std::move(varNames),
                     std::move(collection),
                     std::move(body)
                 );
@@ -368,12 +401,20 @@ struct statement
     static constexpr auto value = lexy::forward<ast::StatementPtr>;
 };
 
+struct nested_block : lexy::transparent_production
+{
+    static constexpr auto whitespace = dsl::ascii::newline | dsl::ascii::space;
+    static constexpr auto rule = dsl::recurse<struct block>;
+    static constexpr auto value = lexy::forward<ast::BlockPtr>;
+};
+
 struct block
 {
-    static constexpr auto rule = dsl::p<statement>;
+    static constexpr auto whitespace = dsl::ascii::space;
+    static constexpr auto rule = dsl::list(dsl::p<statement>);
     
-    static constexpr auto value = lexy::callback<ast::BlockPtr>(
-        [](std::vector<ast::StatementPtr> stmts) -> ast::BlockPtr {
+    static constexpr auto value = lexy::as_list<std::vector<ast::StatementPtr>> >> lexy::callback<ast::BlockPtr>(
+        [](std::vector<ast::StatementPtr>&& stmts) -> ast::BlockPtr {
             return std::make_unique<ast::Block>(
                 std::move(stmts)
             );
@@ -381,40 +422,40 @@ struct block
     );
 };
 
-struct except_block
-{
-    static constexpr auto rule = 
-        LEXY_LIT("except") >> dsl::curly_bracketed(dsl::list(dsl::p<block>));
-    static constexpr auto value = lexy::forward<ast::BlockPtr>;
-};
+// struct except_block
+// {
+//     static constexpr auto rule = 
+//         LEXY_LIT("except") >> dsl::curly_bracketed(dsl::list(dsl::p<block>));
+//     static constexpr auto value = lexy::forward<ast::BlockPtr>;
+// };
 
-struct rule_decl
-{
-    static constexpr auto rule =
-        LEXY_LIT("rule") 
-        >> dsl::p<string>
-        >> dsl::curly_bracketed
-        (
-            dsl::p<block> + dsl::list(dsl::p<except_block>)
-        );
+// struct rule_decl
+// {
+//     static constexpr auto rule =
+//         LEXY_LIT("rule") 
+//         >> dsl::p<string>
+//         >> dsl::curly_bracketed
+//         (
+//             dsl::p<block> + dsl::list(dsl::p<except_block>)
+//         );
 
-    static constexpr auto value = lexy::callback<ast::Rule>(
-        [](std::string name, ast::BlockPtr mainBlock, std::vector<ast::BlockPtr> excepts)
-        {
-            ast::Rule r;
-            r.name = std::move(name);
-            r.mainBlock = std::move(mainBlock);
-            r.exceptBlocks = std::move(excepts);
-            return r;
-        }
-    );
-};
+//     static constexpr auto value = lexy::callback<ast::Rule>(
+//         [](std::string name, ast::BlockPtr mainBlock, std::vector<ast::BlockPtr> excepts)
+//         {
+//             ast::Rule r;
+//             r.name = std::move(name);
+//             r.mainBlock = std::move(mainBlock);
+//             r.exceptBlocks = std::move(excepts);
+//             return r;
+//         }
+//     );
+// };
 
-struct program
-{
-    static constexpr auto rule = dsl::list(dsl::p<rule_decl>);
-    static constexpr auto value = lexy::as_list<std::vector<ast::Rule>>;
-};
+// struct program
+// {
+//     static constexpr auto rule = dsl::list(dsl::p<rule_decl>);
+//     static constexpr auto value = lexy::as_list<std::vector<ast::Rule>>;
+// };
 
 // inline std::optional<std::vector<ast::Rule>> parse_dsl(const std::string& input)
 // {

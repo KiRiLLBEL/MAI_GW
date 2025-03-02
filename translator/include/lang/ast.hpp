@@ -21,19 +21,19 @@ enum class Priority
 struct AssignmentStatement;
 struct QuantifierStatement;
 struct SelectionStatement;
-struct ExpressionStatement;
+struct СonditionalStatement;
 
 using AssignmentStatementPtr = std::unique_ptr<AssignmentStatement>;
 using QuantifierStatementPtr = std::unique_ptr<QuantifierStatement>;
 using SelectionStatementPtr = std::unique_ptr<SelectionStatement>;
-using ExpressionStatementPtr = std::unique_ptr<ExpressionStatement>;
+using СonditionalStatementPtr = std::unique_ptr<СonditionalStatement>;
 
 using Statement = std::variant
 <
     AssignmentStatementPtr,
     QuantifierStatementPtr,
     SelectionStatementPtr,
-    ExpressionStatementPtr
+    СonditionalStatementPtr
 >;
 
 using StatementPtr = std::unique_ptr<Statement>;
@@ -60,19 +60,21 @@ enum class QuantifierType
 struct QuantifierStatement
 {
     QuantifierType type;
-    BlockPtr body;
+    StatementPtr body;
 };
 
 struct SelectionStatement
 {
     std::vector<std::string> varNames;
     ExpressionPtr collectionExpr;
-    BlockPtr body;
+    StatementPtr body;
 };
 
-struct ExpressionStatement
+struct СonditionalStatement
 {
-    ExpressionPtr expr;
+    ExpressionPtr collectionExpr;
+    StatementPtr then;
+    std::optional<StatementPtr> body;
 };
 
 struct Rule

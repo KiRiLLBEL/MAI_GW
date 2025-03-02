@@ -167,11 +167,30 @@ TEST(ParserTestSmoke, BinaryExprSmoke)
 
 TEST(ParserTestSmoke, AssignmentSmoke)
 {
-    const std::string input{"var = 5;"};
+    const std::string input{"var = 5"};
     const auto str_input = lexy::string_input<lexy::utf8_encoding>(input);
     const auto result = lexy::parse<lang::grammar::statement::assignment>(str_input, lexy_ext::report_error);
     EXPECT_TRUE(result.has_value());
     EXPECT_FALSE(result.errors());
     const auto& parsedProperty = *std::get<lang::ast::AssignmentStatementPtr>(*result.value());
     EXPECT_EQ(parsedProperty.name, "var");
+}
+
+TEST(ParserTestSmoke, QuantifierTokenSmoke)
+{
+    const std::string input{"exist"};
+    const auto str_input = lexy::string_input<lexy::utf8_encoding>(input);
+    const auto result = lexy::parse<lang::grammar::statement::quantifier::quantifier_token_exist>(str_input, lexy_ext::report_error);
+    EXPECT_TRUE(result.has_value());
+    EXPECT_FALSE(result.errors());
+    EXPECT_EQ(result.value(), QuantifierType::Exist);
+}
+
+TEST(ParserTestSmoke, QuantifierSmoke)
+{
+    const std::string input{"all { var = true }"};
+    const auto str_input = lexy::string_input<lexy::utf8_encoding>(input);
+    const auto result = lexy::parse<lang::grammar::statement::quantifier>(str_input, lexy_ext::report_error);
+    EXPECT_TRUE(result.has_value());
+    EXPECT_FALSE(result.errors());
 }

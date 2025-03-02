@@ -31,7 +31,6 @@ enum class ExprOpType
 
 struct Literal;
 struct Variable;
-struct TypeCheck;
 struct BinaryExpr;
 struct AccessExpr;
 struct UnaryExpr;
@@ -40,7 +39,6 @@ struct FunctionCall;
 
 using LiteralPtr = std::unique_ptr<Literal>;
 using VariablePtr = std::unique_ptr<Variable>;
-using TypeCheckPtr = std::unique_ptr<TypeCheck>;
 using BinaryExprPtr = std::unique_ptr<BinaryExpr>;
 using UnaryExpPtr = std::unique_ptr<UnaryExpr>;
 using AccessExprPtr = std::unique_ptr<AccessExpr>;
@@ -52,7 +50,6 @@ using Expression = std::variant
 <
     LiteralPtr,
     VariablePtr,
-    TypeCheckPtr,
     BinaryExprPtr,
     UnaryExpPtr,
     AccessExprPtr,
@@ -86,12 +83,6 @@ struct Literal
 struct Variable
 {
     std::string name;
-};
-
-struct TypeCheck
-{
-    ExpressionPtr expr;
-    std::string typeName;
 };
 
 struct AccessExpr
