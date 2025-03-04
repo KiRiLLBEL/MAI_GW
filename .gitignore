@@ -1,3 +1,4 @@
 .structurizr
 .venv
 build
+.vscode

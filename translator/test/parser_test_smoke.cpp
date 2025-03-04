@@ -167,20 +167,20 @@ TEST(ParserTestSmoke, BinaryExprSmoke)
 
 TEST(ParserTestSmoke, AssignmentSmoke)
 {
-    const std::string input{"var = 5"};
+    const std::string input{"x = 5"};
     const auto str_input = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result = lexy::parse<lang::grammar::statement::assignment>(str_input, lexy_ext::report_error);
+    const auto result = lexy::parse<lang::grammar::assignment>(str_input, lexy_ext::report_error);
     EXPECT_TRUE(result.has_value());
     EXPECT_FALSE(result.errors());
     const auto& parsedProperty = *std::get<lang::ast::AssignmentStatementPtr>(*result.value());
-    EXPECT_EQ(parsedProperty.name, "var");
+    EXPECT_EQ(parsedProperty.name, "x");
 }
 
 TEST(ParserTestSmoke, QuantifierTokenSmoke)
 {
     const std::string input{"exist"};
     const auto str_input = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result = lexy::parse<lang::grammar::statement::quantifier::quantifier_token_exist>(str_input, lexy_ext::report_error);
+    const auto result = lexy::parse<lang::grammar::quantifier::quantifier_token_exist>(str_input, lexy_ext::report_error);
     EXPECT_TRUE(result.has_value());
     EXPECT_FALSE(result.errors());
     EXPECT_EQ(result.value(), QuantifierType::Exist);
@@ -188,9 +188,79 @@ TEST(ParserTestSmoke, QuantifierTokenSmoke)
 
 TEST(ParserTestSmoke, QuantifierSmoke)
 {
-    const std::string input{"all { var = true }"};
+    const std::string input{R"(all { s1 in s: s1.tech in ["lst", "gif"] })"};
     const auto str_input = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result = lexy::parse<lang::grammar::statement::quantifier>(str_input, lexy_ext::report_error);
+    const auto result = lexy::parse<lang::grammar::statement>(str_input, lexy_ext::report_error);
+    EXPECT_TRUE(result.has_value());
+    EXPECT_FALSE(result.errors());
+}
+
+TEST(ParserTestSmoke, ConditionalSmoke)
+{
+    const std::string input{R"(
+    all { 
+        s1 in s:
+            if s1.tech > 10
+                then exist 
+                    { t1 in t: true } 
+                else all 
+                    { t2 in t: false}
+    }
+    )"};
+    const auto str_input = lexy::string_input<lexy::utf8_encoding>(input);
+    const auto result = lexy::parse<lang::grammar::statement>(str_input, lexy_ext::report_error);
+    EXPECT_TRUE(result.has_value());
+    EXPECT_FALSE(result.errors());
+}
+
+
+TEST(ParserTestSmoke, NestedQuantifierSmoke)
+{
+    const std::string input{R"(
+    all { 
+        s1 in s:
+            "DMZ" in s1.props:
+            exist {
+                p in t:
+                    p.x == true
+            }
+        }
+    )"};
+    const auto str_input = lexy::string_input<lexy::utf8_encoding>(input);
+    const auto result = lexy::parse<lang::grammar::statement>(str_input, lexy_ext::report_error);
+    EXPECT_TRUE(result.has_value());
+    EXPECT_FALSE(result.errors());
+}
+
+TEST(ParserTestSmoke, BlockrSmoke)
+{
+    const std::string input{R"(
+    x = 10;
+    y = true;
+    z = ["token", 1, true];
+    all { 
+        s1 in s:
+            "DMZ" in s1.props:
+            exist {
+                p in t:
+                    p.x == true
+            }
+    };
+    all { 
+        s1 in s:
+            "DMZ" in s1.props:
+            exist {
+                p in t:
+                    p.x == true
+            }
+    };
+    except exist {
+        s1 in s:
+            s1.tech in ["go"]
+    }
+    )"};
+    const auto str_input = lexy::string_input<lexy::utf8_encoding>(input);
+    const auto result = lexy::parse<lang::grammar::block>(str_input, lexy_ext::report_error);
     EXPECT_TRUE(result.has_value());
     EXPECT_FALSE(result.errors());
 }

@@ -71,7 +71,12 @@ struct identifier : lexy::token_production
             const auto kw_exist = LEXY_KEYWORD("exist", id);
             const auto kw_true = LEXY_KEYWORD("true", id);
             const auto kw_false = LEXY_KEYWORD("false", id);
-            return id.reserve(kw_not, kw_in, kw_or, kw_and, kw_xor, kw_all, kw_exist, kw_true, kw_false);
+            const auto kw_if = LEXY_KEYWORD("if", id);
+            const auto kw_then = LEXY_KEYWORD("then", id);
+            const auto kw_else = LEXY_KEYWORD("else", id);
+            const auto kw_none = LEXY_KEYWORD("none", id);
+            const auto kw_except = LEXY_KEYWORD("except", id);
+            return id.reserve(kw_not, kw_in, kw_or, kw_and, kw_xor, kw_all, kw_exist, kw_true, kw_false, kw_if, kw_then, kw_else, kw_none, kw_except);
     }();
     static constexpr auto value = lexy::as_string<std::string>;
 };
@@ -302,116 +307,179 @@ struct expression : lexy::expression_production
     );
 };
 
-struct nested_statement : lexy::transparent_production
+struct nested_selection : lexy::transparent_production
 {
     static constexpr auto whitespace = dsl::ascii::newline | dsl::ascii::space;
-    static constexpr auto rule = dsl::recurse<struct statement>;
+    static constexpr auto rule = dsl::recurse<struct selection>;
     static constexpr auto value = lexy::forward<ast::StatementPtr>;
 };
+
+struct nested_quantifier : lexy::transparent_production
+{
+    static constexpr auto whitespace = dsl::ascii::newline | dsl::ascii::space;
+    static constexpr auto rule = dsl::recurse<struct quantifier>;
+    static constexpr auto value = lexy::forward<ast::StatementPtr>;
+};
+
+struct quantifier
+{
+    struct quantifier_token_all
+    {
+        static constexpr auto rule = LEXY_LIT("all");
+        static constexpr auto value = lexy::constant(ast::QuantifierType::All);
+    };
+
+    struct quantifier_token_exist
+    {
+        static constexpr auto rule = LEXY_LIT("exist");
+        static constexpr auto value = lexy::constant(ast::QuantifierType::Exist);
+    };
+
+    static constexpr auto rule = (dsl::p<quantifier_token_all> | dsl::p<quantifier_token_exist>)
+        >> dsl::while_(dsl::ascii::space | dsl::ascii::newline)
+        >> dsl::curly_bracketed(dsl::p<nested_selection>);
+
+    static constexpr auto value = lexy::callback<ast::StatementPtr>(
+        [](ast::QuantifierType&& type, ast::StatementPtr&& block) -> ast::StatementPtr
+        {
+            auto q = std::make_unique<ast::QuantifierStatement>(
+                type,
+                std::move(block)
+            );
+            return std::make_unique<ast::Statement>(std::move(q));
+        }
+    );
+};
+
+
+struct conditional
+{
+    static constexpr auto rule = LEXY_LIT("if")
+        >> dsl::p<expression>
+        >> LEXY_LIT("then")
+        >> dsl::p<quantifier>
+        >> dsl::opt(LEXY_LIT("else") >> dsl::p<quantifier>);
+    
+    static constexpr auto value = lexy::callback<ast::StatementPtr>(
+        [](ast::ExpressionPtr&& cond, ast::StatementPtr&& then, lexy::nullopt&&) -> ast::StatementPtr
+        {
+            auto c = std::make_unique<ast::СonditionalStatement>(
+                std::move(cond),
+                std::move(then)
+            );
+
+            return std::make_unique<ast::Statement>(std::move(c));
+        },
+        [](ast::ExpressionPtr&& cond, ast::StatementPtr&& then, ast::StatementPtr&& else_) -> ast::StatementPtr
+        {
+            auto c = std::make_unique<ast::СonditionalStatement>(
+                std::move(cond),
+                std::move(then),
+                std::move(else_)
+            );
+
+            return std::make_unique<ast::Statement>(std::move(c));
+        }
+    );
+};
+
+struct selection
+{
+    struct selection_list
+    {
+        static constexpr auto rule = dsl::list(
+            dsl::p<identifier> >> dsl::while_(dsl::ascii::space), 
+            dsl::sep(dsl::comma >> dsl::while_(dsl::ascii::space)));
+
+        static constexpr auto value = lexy::as_list<std::vector<std::string>>;
+    };
+
+    static constexpr auto rule = dsl::p<selection_list>
+        >> dsl::while_(dsl::ascii::space)
+        >> LEXY_LIT("in")
+        >> dsl::while_(dsl::ascii::space)
+        >> dsl::p<expression>
+        >> dsl::while_(dsl::ascii::space)
+        >> dsl::lit_c<':'>
+        >> dsl::while_(dsl::ascii::space | dsl::ascii::newline)
+        >> (dsl::p<quantifier> | dsl::p<conditional> | (dsl::else_ >> dsl::p<expression> >> dsl::opt(LEXY_LIT(":") >> dsl::p<quantifier>)));
+
+    static constexpr auto value = lexy::callback<ast::StatementPtr>(
+        [](std::vector<std::string>&& varNames, ast::ExpressionPtr&& collection, ast::StatementPtr&& body) -> ast::StatementPtr{
+            auto sel = std::make_unique<ast::SelectionStatement>(
+                std::move(varNames),
+                std::move(collection),
+                std::move(body)
+            );
+            return std::make_unique<ast::Statement>(std::move(sel));
+        },
+        [](std::vector<std::string>&& varNames, ast::ExpressionPtr&& collection, ast::ExpressionPtr&& body, lexy::nullopt) -> ast::StatementPtr{
+            auto sel = std::make_unique<ast::SelectionStatement>(
+                std::move(varNames),
+                std::move(collection),
+                std::move(body)
+            );
+            return std::make_unique<ast::Statement>(std::move(sel));
+        },
+        [](std::vector<std::string>&& varNames, ast::ExpressionPtr&& collection, ast::ExpressionPtr&& body, ast::StatementPtr&& quant) -> ast::StatementPtr{
+            auto sel = std::make_unique<ast::SelectionStatement>(
+                std::move(varNames),
+                std::move(collection),
+                std::move(body),
+                std::move(quant)
+            );
+            return std::make_unique<ast::Statement>(std::move(sel));
+        }
+    );
+};
+
+struct assignment
+{
+    static constexpr auto rule =  dsl::p<identifier> 
+        >> dsl::while_(dsl::ascii::space) 
+        >> dsl::lit_c<'='> 
+        >> dsl::while_(dsl::ascii::space) 
+        >> dsl::p<expression>;
+
+    static constexpr auto value = lexy::callback<ast::StatementPtr>(
+        [](std::string&& name, ast::ExpressionPtr&& expr) -> ast::StatementPtr
+        {
+            auto asg = std::make_unique<ast::AssignmentStatement>(
+                std::move(name),
+                std::move(expr)
+            );
+            return std::make_unique<ast::Statement>(std::move(asg));
+        }
+    );
+};
+
+struct except_quantifier
+{
+    static constexpr auto whitespace = dsl::ascii::space | dsl::ascii::newline;
+    static constexpr auto rule = LEXY_LIT("except") >> dsl::p<quantifier>;
+    static constexpr auto value = lexy::callback<ast::StatementPtr>(
+        [](ast::StatementPtr&& inner) -> ast::StatementPtr
+        {
+            auto asg = std::make_unique<ast::ExceptStatement>(
+                std::move(inner)
+            );
+            return std::make_unique<ast::Statement>(std::move(asg));
+        }
+    );
+}; 
 
 struct statement
 {
-    struct assignment
-    {
-        static constexpr auto rule = dsl::p<identifier> 
-            >> dsl::while_(dsl::ascii::space) 
-            >> dsl::lit_c<'='> 
-            >> dsl::while_(dsl::ascii::space) 
-            >> dsl::p<expression>;
-        static constexpr auto value = lexy::callback<ast::StatementPtr>(
-            [](std::string&& name, ast::ExpressionPtr&& expr) -> ast::StatementPtr
-            {
-                auto asg = std::make_unique<ast::AssignmentStatement>(
-                    std::move(name),
-                    std::move(expr)
-                );
-                return std::make_unique<ast::Statement>(std::move(asg));
-            }
-        );
-    };
-
-    struct quantifier
-    {
-        struct quantifier_token_all
-        {
-            static constexpr auto rule = LEXY_LIT("all");
-            static constexpr auto value = lexy::constant(ast::QuantifierType::All);
-        };
-
-        struct quantifier_token_exist
-        {
-            static constexpr auto rule = LEXY_LIT("exist");
-            static constexpr auto value = lexy::constant(ast::QuantifierType::Exist);
-        };
-
-        static constexpr auto rule = (dsl::p<quantifier_token_all> | dsl::p<quantifier_token_exist>)
-            >> dsl::while_(dsl::ascii::space | dsl::ascii::newline)
-            >> dsl::curly_bracketed(dsl::p<nested_statement>);
-
-        static constexpr auto value = lexy::callback<ast::StatementPtr>(
-            [](ast::QuantifierType&& type, ast::StatementPtr&& block) -> ast::StatementPtr
-            {
-                auto q = std::make_unique<ast::QuantifierStatement>(
-                    type,
-                    std::move(block)
-                );
-                return std::make_unique<ast::Statement>(std::move(q));
-            }
-        );
-    };
-
-    struct selection
-    {
-        struct selection_list
-        {
-            static constexpr auto rule = dsl::list(
-                dsl::p<identifier> >> dsl::while_(dsl::ascii::space), 
-                dsl::sep(dsl::comma >> dsl::ascii::space));
-
-            static constexpr auto value = lexy::as_list<std::vector<std::string>>;
-        };
-
-        static constexpr auto rule = dsl::p<selection_list>
-            >> dsl::while_(dsl::ascii::space)
-            >> LEXY_LIT("in")
-            >> dsl::while_(dsl::ascii::space)
-            >> dsl::p<expression>
-            >> dsl::while_(dsl::ascii::space)
-            >> dsl::lit_c<':'>
-            >> dsl::while_(dsl::ascii::space | dsl::ascii::newline)
-            >> dsl::p<nested_statement>;
-
-        static constexpr auto value = lexy::callback<ast::StatementPtr>(
-            [](std::vector<std::string>&& varNames, ast::ExpressionPtr collection, ast::StatementPtr body) -> ast::StatementPtr{
-                auto sel = std::make_unique<ast::SelectionStatement>(
-                    std::move(varNames),
-                    std::move(collection),
-                    std::move(body)
-                );
-                return std::make_unique<ast::Statement>(std::move(sel));
-            }
-        );
-    };
-
-    static constexpr auto rule = 
-        dsl::p<assignment> |
-        dsl::p<quantifier> |
-        dsl::p<selection>;
-
+    static constexpr auto whitespace = dsl::ascii::space;
+    static constexpr auto rule = dsl::p<quantifier>
+        | dsl::p<assignment>
+        | dsl::else_ >> dsl::p<except_quantifier>;
     static constexpr auto value = lexy::forward<ast::StatementPtr>;
-};
-
-struct nested_block : lexy::transparent_production
-{
-    static constexpr auto whitespace = dsl::ascii::newline | dsl::ascii::space;
-    static constexpr auto rule = dsl::recurse<struct block>;
-    static constexpr auto value = lexy::forward<ast::BlockPtr>;
 };
 
 struct block
 {
-    static constexpr auto whitespace = dsl::ascii::space;
-    static constexpr auto rule = dsl::list(dsl::p<statement>);
+    static constexpr auto rule = dsl::list(dsl::p<statement>, dsl::sep(dsl::semicolon));
     
     static constexpr auto value = lexy::as_list<std::vector<ast::StatementPtr>> >> lexy::callback<ast::BlockPtr>(
         [](std::vector<ast::StatementPtr>&& stmts) -> ast::BlockPtr {
