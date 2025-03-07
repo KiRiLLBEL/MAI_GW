@@ -232,7 +232,7 @@ TEST(ParserTestSmoke, NestedQuantifierSmoke)
     EXPECT_FALSE(result.errors());
 }
 
-TEST(ParserTestSmoke, BlockrSmoke)
+TEST(ParserTestSmoke, BlockSmoke)
 {
     const std::string input{R"(
     x = 10;
@@ -261,6 +261,40 @@ TEST(ParserTestSmoke, BlockrSmoke)
     )"};
     const auto str_input = lexy::string_input<lexy::utf8_encoding>(input);
     const auto result = lexy::parse<lang::grammar::block>(str_input, lexy_ext::report_error);
+    EXPECT_TRUE(result.has_value());
+    EXPECT_FALSE(result.errors());
+}
+
+TEST(ParserTestSmoke, RuleSmoke)
+{
+    const std::string input{R"(rule first {
+        x = 10;
+        y = true;
+        z = ["token", 1, true];
+        all { 
+            s1 in s:
+                "DMZ" in s1.props:
+                exist {
+                    p in t:
+                        p.x == true
+                }
+        };
+        all { 
+            s1 in s:
+                "DMZ" in s1.props:
+                exist {
+                    p in t:
+                        p.x == true
+                }
+        };
+        except exist {
+            s1 in s:
+                s1.tech in ["go"]
+        }
+    }
+    )"};
+    const auto str_input = lexy::string_input<lexy::utf8_encoding>(input);
+    const auto result = lexy::parse<lang::grammar::rule_decl>(str_input, lexy_ext::report_error);
     EXPECT_TRUE(result.has_value());
     EXPECT_FALSE(result.errors());
 }

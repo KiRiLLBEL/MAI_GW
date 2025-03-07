@@ -89,10 +89,9 @@ struct ExceptStatement
 struct Rule
 {
     std::string name;
-    std::optional<std::string> description;
-    Priority priority{Priority::ERROR};
-    BlockPtr mainBlock;
-    std::vector<BlockPtr> exceptBlocks;
+    // std::optional<std::string> description;
+    // Priority priority{Priority::ERROR};
+    BlockPtr calls;
 };
 
 }

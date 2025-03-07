@@ -490,34 +490,20 @@ struct block
     );
 };
 
-// struct except_block
-// {
-//     static constexpr auto rule = 
-//         LEXY_LIT("except") >> dsl::curly_bracketed(dsl::list(dsl::p<block>));
-//     static constexpr auto value = lexy::forward<ast::BlockPtr>;
-// };
+struct rule_decl
+{
+    static constexpr auto whitespace = dsl::ascii::newline;
+    static constexpr auto rule = LEXY_LIT("rule") 
+        >> dsl::while_(dsl::ascii::space | dsl::ascii::newline)
+        >> dsl::p<identifier>
+        >> dsl::while_(dsl::ascii::space | dsl::ascii::newline) 
+        >> dsl::curly_bracketed
+        (
+            dsl::p<block>
+        );
 
-// struct rule_decl
-// {
-//     static constexpr auto rule =
-//         LEXY_LIT("rule") 
-//         >> dsl::p<string>
-//         >> dsl::curly_bracketed
-//         (
-//             dsl::p<block> + dsl::list(dsl::p<except_block>)
-//         );
-
-//     static constexpr auto value = lexy::callback<ast::Rule>(
-//         [](std::string name, ast::BlockPtr mainBlock, std::vector<ast::BlockPtr> excepts)
-//         {
-//             ast::Rule r;
-//             r.name = std::move(name);
-//             r.mainBlock = std::move(mainBlock);
-//             r.exceptBlocks = std::move(excepts);
-//             return r;
-//         }
-//     );
-// };
+    static constexpr auto value = lexy::construct<ast::Rule>;
+};
 
 // struct program
 // {
