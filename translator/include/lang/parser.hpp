@@ -531,18 +531,13 @@ struct priority
 
 struct rule_decl
 {
-    static constexpr auto whitespace = dsl::ascii::newline;
+    static constexpr auto whitespace = dsl::ascii::space | dsl::ascii::newline;
     static constexpr auto rule = LEXY_LIT("rule") 
-        >> dsl::while_(dsl::ascii::space | dsl::ascii::newline)
         >> dsl::p<identifier>
-        >> dsl::while_(dsl::ascii::space | dsl::ascii::newline) 
         >> dsl::curly_bracketed
         (
-            dsl::while_(dsl::ascii::space | dsl::ascii::newline) +
             dsl::opt(dsl::p<description>) +
-            dsl::while_(dsl::ascii::space | dsl::ascii::newline) +
             dsl::opt(dsl::p<priority>) +
-            dsl::while_(dsl::ascii::space | dsl::ascii::newline) +
             dsl::p<block>
         );
 
