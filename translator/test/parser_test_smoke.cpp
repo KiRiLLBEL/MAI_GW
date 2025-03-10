@@ -268,6 +268,8 @@ TEST(ParserTestSmoke, BlockSmoke)
 TEST(ParserTestSmoke, RuleSmoke)
 {
     const std::string input{R"(rule first {
+        description: "Hello world";
+        priority: Info;
         x = 10;
         y = true;
         z = ["token", 1, true];

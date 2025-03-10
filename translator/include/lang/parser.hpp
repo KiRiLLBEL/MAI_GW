@@ -35,6 +35,7 @@
 #include <lexy_ext/report_error.hpp>
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -76,7 +77,9 @@ struct identifier : lexy::token_production
             const auto kw_else = LEXY_KEYWORD("else", id);
             const auto kw_none = LEXY_KEYWORD("none", id);
             const auto kw_except = LEXY_KEYWORD("except", id);
-            return id.reserve(kw_not, kw_in, kw_or, kw_and, kw_xor, kw_all, kw_exist, kw_true, kw_false, kw_if, kw_then, kw_else, kw_none, kw_except);
+            const auto kw_priority = LEXY_KEYWORD("priority", id);
+            const auto kw_description = LEXY_KEYWORD("description", id);
+            return id.reserve(kw_not, kw_in, kw_or, kw_and, kw_xor, kw_all, kw_exist, kw_true, kw_false, kw_if, kw_then, kw_else, kw_none, kw_except, kw_priority, kw_description);
     }();
     static constexpr auto value = lexy::as_string<std::string>;
 };
@@ -490,6 +493,42 @@ struct block
     );
 };
 
+struct description
+{
+    static constexpr auto rule = LEXY_LIT("description:")
+        >> dsl::while_(dsl::ascii::space)
+        >> dsl::p<string>
+        >> LEXY_LIT(";");
+    static constexpr auto value = lexy::as_string<std::string>;
+};
+
+struct priority
+{
+    struct priority_error
+    {
+        static constexpr auto rule = LEXY_LIT("Error");
+        static constexpr auto value = lexy::constant(ast::Priority::ERROR);
+    };
+
+    struct priority_info
+    {
+        static constexpr auto rule = LEXY_LIT("Info");
+        static constexpr auto value = lexy::constant(ast::Priority::INFO);
+    };
+
+    struct priority_warn
+    {
+        static constexpr auto rule = LEXY_LIT("Warn");
+        static constexpr auto value = lexy::constant(ast::Priority::WARN);
+    };
+
+    static constexpr auto rule = LEXY_LIT("priority:")
+        >> dsl::while_(dsl::ascii::space)
+        >> (dsl::p<priority_error> | dsl::p<priority_info> | dsl::p<priority_warn>)
+        >> LEXY_LIT(";");
+    static constexpr auto value = lexy::forward<ast::Priority>;
+};
+
 struct rule_decl
 {
     static constexpr auto whitespace = dsl::ascii::newline;
@@ -499,10 +538,32 @@ struct rule_decl
         >> dsl::while_(dsl::ascii::space | dsl::ascii::newline) 
         >> dsl::curly_bracketed
         (
+            dsl::while_(dsl::ascii::space | dsl::ascii::newline) +
+            dsl::opt(dsl::p<description>) +
+            dsl::while_(dsl::ascii::space | dsl::ascii::newline) +
+            dsl::opt(dsl::p<priority>) +
+            dsl::while_(dsl::ascii::space | dsl::ascii::newline) +
             dsl::p<block>
         );
 
-    static constexpr auto value = lexy::construct<ast::Rule>;
+    static constexpr auto value = lexy::callback<ast::Rule>(
+        [](std::string&& name, std::string&& desc, lexy::nullopt, ast::BlockPtr&& block) -> ast::Rule
+        {
+            return ast::Rule(std::move(name), std::move(desc), std::move(ast::Priority::ERROR), std::move(block));
+        },
+        [](std::string&& name, lexy::nullopt, ast::Priority prio, ast::BlockPtr&& block) -> ast::Rule
+        {
+            return ast::Rule(std::move(name), std::nullopt, std::move(prio), std::move(block));
+        },
+        [](std::string&& name, std::string&& desc, ast::Priority prio, ast::BlockPtr&& block) -> ast::Rule
+        {
+            return ast::Rule(std::move(name), std::move(desc), std::move(prio), std::move(block));
+        },
+        [](std::string&& name, lexy::nullopt, lexy::nullopt, ast::BlockPtr&& block) -> ast::Rule
+        {
+            return ast::Rule(std::move(name), std::nullopt, ast::Priority::ERROR, std::move(block));
+        }
+    );
 };
 
 // struct program
