@@ -1,11 +1,14 @@
 #include <lang/ast.hpp>
 #include <lang/expression.hpp>
+#include <lang/parser.hpp>
+
 #include <gtest/gtest.h>
 
-#include <lang/parser.hpp>
 #include <lexy/encoding.hpp>
 #include <lexy/input/string_input.hpp>
+
 #include <lexy_ext/report_error.hpp>
+
 #include <memory>
 #include <vector>
 

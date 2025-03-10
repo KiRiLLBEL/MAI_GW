@@ -11,12 +11,17 @@ FetchContent_Declare(
     lexy 
     URL https://lexy.foonathan.net/download/lexy-src.zip
 )
-FetchContent_MakeAvailable(lexy)
 FetchContent_Declare(
     magic_enum
     URL https://github.com/Neargye/magic_enum/archive/refs/tags/v0.9.7.zip
 )
+FetchContent_Declare(
+    fmt
+    URL https://github.com/fmtlib/fmt/archive/refs/tags/11.1.4.zip
+)
+FetchContent_MakeAvailable(lexy)
 FetchContent_MakeAvailable(magic_enum)
+FetchContent_MakeAvailable(fmt)
 
 add_library(lang INTERFACE)
 
@@ -31,6 +36,7 @@ target_link_libraries(
     INTERFACE
     foonathan::lexy
     magic_enum::magic_enum
+    fmt::fmt
 )
 
 add_executable(dsl-parser)

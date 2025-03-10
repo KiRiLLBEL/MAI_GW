@@ -1,5 +1,7 @@
 #include <translator/translator.hpp>
+
 #include <lang/parser.hpp>
+
 #include <gtest/gtest.h>
 
 TEST(TranslatorTestSmoke, RuleOptionsSmoke)

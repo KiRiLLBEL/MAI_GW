@@ -62,24 +62,25 @@ struct ws : lexy::token_production
 struct identifier : lexy::token_production
 {
     static constexpr auto rule = []{
-            const auto id   = dsl::identifier(dsl::ascii::alpha_digit_underscore, dsl::ascii::alpha_digit_underscore);
-            const auto kw_not = LEXY_KEYWORD("not", id);
-            const auto kw_in = LEXY_KEYWORD("in", id);
-            const auto kw_or = LEXY_KEYWORD("or", id);
-            const auto kw_and = LEXY_KEYWORD("and", id);
-            const auto kw_xor = LEXY_KEYWORD("xor", id);
-            const auto kw_all = LEXY_KEYWORD("all", id);
-            const auto kw_exist = LEXY_KEYWORD("exist", id);
-            const auto kw_true = LEXY_KEYWORD("true", id);
-            const auto kw_false = LEXY_KEYWORD("false", id);
-            const auto kw_if = LEXY_KEYWORD("if", id);
-            const auto kw_then = LEXY_KEYWORD("then", id);
-            const auto kw_else = LEXY_KEYWORD("else", id);
-            const auto kw_none = LEXY_KEYWORD("none", id);
-            const auto kw_except = LEXY_KEYWORD("except", id);
-            const auto kw_priority = LEXY_KEYWORD("priority", id);
-            const auto kw_description = LEXY_KEYWORD("description", id);
-            return id.reserve(kw_not, kw_in, kw_or, kw_and, kw_xor, kw_all, kw_exist, kw_true, kw_false, kw_if, kw_then, kw_else, kw_none, kw_except, kw_priority, kw_description);
+        const auto id = dsl::identifier(dsl::ascii::alpha_digit_underscore, dsl::ascii::alpha_digit_underscore);
+        return id.reserve(
+            LEXY_KEYWORD("not", id),
+            LEXY_KEYWORD("in", id),
+            LEXY_KEYWORD("or", id),
+            LEXY_KEYWORD("and", id),
+            LEXY_KEYWORD("xor", id),
+            LEXY_KEYWORD("all", id),
+            LEXY_KEYWORD("exist", id),
+            LEXY_KEYWORD("true", id),
+            LEXY_KEYWORD("false", id),
+            LEXY_KEYWORD("if", id),
+            LEXY_KEYWORD("then", id),
+            LEXY_KEYWORD("else", id),
+            LEXY_KEYWORD("none", id),
+            LEXY_KEYWORD("except", id),
+            LEXY_KEYWORD("priority", id),
+            LEXY_KEYWORD("description", id)
+        );
     }();
     static constexpr auto value = lexy::as_string<std::string>;
 };
