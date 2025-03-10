@@ -18,14 +18,31 @@ add_executable(
     parser_test_smoke.cpp
 )
 
+add_executable(
+    translator_test_smoke
+    translator_test_smoke.cpp
+)
+
 target_link_libraries(
     parser_test_smoke PRIVATE
     gtest
     gtest_main
-    lang_parser
+    lang
+)
+
+target_link_libraries(
+    translator_test_smoke PRIVATE
+    gtest
+    gtest_main
+    lang
 )
 
 add_test(
     NAME ParserTestSmoke
     COMMAND parser_test_smoke
+)
+
+add_test(
+    NAME TranslatorTestSmoke
+    COMMAND translator_test_smoke
 )

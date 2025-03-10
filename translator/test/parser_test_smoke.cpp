@@ -1,7 +1,5 @@
-#include "lang/ast.hpp"
-#include "lang/expression.hpp"
-#include "gtest/gtest.h"
-#include <array>
+#include <lang/ast.hpp>
+#include <lang/expression.hpp>
 #include <gtest/gtest.h>
 
 #include <lang/parser.hpp>
