@@ -184,7 +184,7 @@ TEST(ParserTestSmoke, QuantifierTokenSmoke)
     const auto result = lexy::parse<lang::grammar::quantifier::quantifier_token_exist>(str_input, lexy_ext::report_error);
     EXPECT_TRUE(result.has_value());
     EXPECT_FALSE(result.errors());
-    EXPECT_EQ(result.value(), QuantifierType::Exist);
+    EXPECT_EQ(result.value(), QuantifierType::ANY);
 }
 
 TEST(ParserTestSmoke, QuantifierSmoke)

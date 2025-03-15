@@ -315,7 +315,7 @@ struct nested_selection : lexy::transparent_production
 {
     static constexpr auto whitespace = dsl::ascii::newline | dsl::ascii::space;
     static constexpr auto rule = dsl::recurse<struct selection>;
-    static constexpr auto value = lexy::forward<ast::StatementPtr>;
+    static constexpr auto value = lexy::forward<ast::SelectionStatementPtr>;
 };
 
 struct nested_quantifier : lexy::transparent_production
@@ -330,13 +330,13 @@ struct quantifier
     struct quantifier_token_all
     {
         static constexpr auto rule = LEXY_LIT("all");
-        static constexpr auto value = lexy::constant(ast::QuantifierType::All);
+        static constexpr auto value = lexy::constant(ast::QuantifierType::ALL);
     };
 
     struct quantifier_token_exist
     {
         static constexpr auto rule = LEXY_LIT("exist");
-        static constexpr auto value = lexy::constant(ast::QuantifierType::Exist);
+        static constexpr auto value = lexy::constant(ast::QuantifierType::ANY);
     };
 
     static constexpr auto rule = (dsl::p<quantifier_token_all> | dsl::p<quantifier_token_exist>)
@@ -344,7 +344,7 @@ struct quantifier
         >> dsl::curly_bracketed(dsl::p<nested_selection>);
 
     static constexpr auto value = lexy::callback<ast::StatementPtr>(
-        [](ast::QuantifierType&& type, ast::StatementPtr&& block) -> ast::StatementPtr
+        [](ast::QuantifierType&& type, ast::SelectionStatementPtr&& block) -> ast::StatementPtr
         {
             auto q = std::make_unique<ast::QuantifierStatement>(
                 type,
@@ -408,31 +408,31 @@ struct selection
         >> dsl::while_(dsl::ascii::space | dsl::ascii::newline)
         >> (dsl::p<quantifier> | dsl::p<conditional> | (dsl::else_ >> dsl::p<expression> >> dsl::opt(LEXY_LIT(":") >> dsl::p<quantifier>)));
 
-    static constexpr auto value = lexy::callback<ast::StatementPtr>(
-        [](std::vector<std::string>&& varNames, ast::ExpressionPtr&& collection, ast::StatementPtr&& body) -> ast::StatementPtr{
-            auto sel = std::make_unique<ast::SelectionStatement>(
+    static constexpr auto value = lexy::callback<ast::SelectionStatementPtr>(
+        [](std::vector<std::string>&& varNames, ast::ExpressionPtr&& collection, ast::StatementPtr&& body) -> ast::SelectionStatementPtr
+        {
+            return std::make_unique<ast::SelectionStatement>(
                 std::move(varNames),
                 std::move(collection),
                 std::move(body)
             );
-            return std::make_unique<ast::Statement>(std::move(sel));
         },
-        [](std::vector<std::string>&& varNames, ast::ExpressionPtr&& collection, ast::ExpressionPtr&& body, lexy::nullopt) -> ast::StatementPtr{
-            auto sel = std::make_unique<ast::SelectionStatement>(
+        [](std::vector<std::string>&& varNames, ast::ExpressionPtr&& collection, ast::ExpressionPtr&& body, lexy::nullopt) -> ast::SelectionStatementPtr
+        {
+            return std::make_unique<ast::SelectionStatement>(
                 std::move(varNames),
                 std::move(collection),
                 std::move(body)
             );
-            return std::make_unique<ast::Statement>(std::move(sel));
         },
-        [](std::vector<std::string>&& varNames, ast::ExpressionPtr&& collection, ast::ExpressionPtr&& body, ast::StatementPtr&& quant) -> ast::StatementPtr{
-            auto sel = std::make_unique<ast::SelectionStatement>(
+        [](std::vector<std::string>&& varNames, ast::ExpressionPtr&& collection, ast::ExpressionPtr&& body, ast::StatementPtr&& quant) -> ast::SelectionStatementPtr
+        {
+            return std::make_unique<ast::SelectionStatement>(
                 std::move(varNames),
                 std::move(collection),
                 std::move(body),
                 std::move(quant)
             );
-            return std::make_unique<ast::Statement>(std::move(sel));
         }
     );
 };

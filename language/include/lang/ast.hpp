@@ -56,14 +56,14 @@ struct AssignmentStatement
 
 enum class QuantifierType
 {
-    All,
-    Exist
+    ALL,
+    ANY
 };
 
 struct QuantifierStatement
 {
     QuantifierType type;
-    StatementPtr body;
+    SelectionStatementPtr body;
 };
 
 struct SelectionStatement
