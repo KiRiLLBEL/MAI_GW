@@ -1,3 +1,5 @@
+#include "lang/ast.hpp"
+#include "translator/context.hpp"
 #include <translator/translator.hpp>
 
 #include <lang/parser.hpp>
@@ -29,6 +31,20 @@ TEST(TranslatorTestSmoke, SelectionSmoke)
     EXPECT_TRUE(result.has_value());
     EXPECT_FALSE(result.errors());
     cypher::Translator translator;
-    const auto translation = translator.translateQuantifierStatement(*std::get<lang::ast::QuantifierStatementPtr>(*result.value()));
+    cypher::Context context;
+    const auto translation = translator.translateQuantifierStatement(context, std::get<lang::ast::QuantifierStatementPtr>(*result.value()));
+    EXPECT_TRUE(not translation.empty());
+}
+
+TEST(TranslatorTestSmoke, AssigmentSmoke)
+{
+    const std::string input{R"(x = 5)"};
+    const auto str_input = lexy::string_input<lexy::utf8_encoding>(input);
+    const auto result = lexy::parse<lang::grammar::assignment>(str_input, lexy_ext::report_error);
+    EXPECT_TRUE(result.has_value());
+    EXPECT_FALSE(result.errors());
+    cypher::Translator translator;
+    cypher::Context context;
+    const auto translation = translator.translateAssignmentStatement(context, std::get<lang::ast::AssignmentStatementPtr>(*result.value()));
     EXPECT_TRUE(not translation.empty());
 }

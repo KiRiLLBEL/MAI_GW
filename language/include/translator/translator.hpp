@@ -16,6 +16,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <type_traits>
+#include <variant>
 namespace cypher
 {
 
@@ -51,7 +52,7 @@ public:
 
     static std::string translateStatement(Context& context, const lang::ast::Statement& statement)
     {
-        return std::visit([](auto&& argPtr) -> std::string {
+        return std::visit([&](auto&& argPtr) -> std::string {
             using T = std::decay_t<decltype(argPtr)>;
 
             if (!argPtr)
@@ -59,15 +60,11 @@ public:
 
             if constexpr (std::is_same_v<T, lang::ast::AssignmentStatementPtr>)
             {
-                return std::string(InDevelopmentFormat);
+                return translateAssignmentStatement(context, argPtr);
             }
             else if constexpr (std::is_same_v<T, lang::ast::QuantifierStatementPtr>)
             {
-                return std::string(InDevelopmentFormat);
-            }
-            else if constexpr (std::is_same_v<T, lang::ast::SelectionStatementPtr>)
-            {
-                return std::string(InDevelopmentFormat);
+                return translateQuantifierStatement(context, argPtr);
             }
             else if constexpr (std::is_same_v<T, lang::ast::СonditionalStatementPtr>)
             {
@@ -86,7 +83,7 @@ public:
     }
 
     template<lang::ast::QuantifierType quant>
-    static std::string translateSelectionStatement(Context& context, const lang::ast::SelectionStatement& stmt)
+    static std::string translateSelectionStatement(Context& context, const lang::ast::SelectionStatementPtr& stmt)
     {
         std::string result;
         std::string selectionFrom;
@@ -94,13 +91,20 @@ public:
             using T = std::decay_t<decltype(arg)>;
             if constexpr (std::is_same_v<T, lang::ast::VariablePtr>)
             {
-                if (not LiteralInSuperSet(arg) and not LiteralInContext(context, arg))
+                if(context.sets.empty())
                 {
-                    throw std::runtime_error(fmt::format(SuperSetsContainsError, arg->name));
+                    if (not LiteralInSuperSet(arg))
+                    {
+                        throw std::runtime_error(fmt::format(SuperSetsContainsError, arg->name));
+                    }
+                    result = fmt::format(MatchFormat, arg->name) + "\n" + fmt::format(WithCollectFormat, arg->name) + "\n";
                 }
-                else if(LiteralInSuperSet(arg))
+                else
                 {
-                    result = fmt::format(MatchFormat, arg->name) + "\n" + fmt::format(WithFormat, arg->name) + "\n";
+                    if(not LiteralInContext(context, arg))
+                    {
+                        throw std::runtime_error(fmt::format(SuperSetsContainsError, arg->name));
+                    }
                 }
                 selectionFrom = arg->name;
             }
@@ -112,7 +116,7 @@ public:
                 }
                 // TODO: add selectionFrom for route
             }
-        }, *stmt.collectionExpr);
+        }, *stmt->collectionExpr);
         context.sets.push(std::unordered_set<std::string_view>());
         auto buildSelection = [&](auto&& self, const std::vector<std::string>& names, size_t index) -> std::string {
             context.sets.top().insert(names[index]);
@@ -125,19 +129,40 @@ public:
                 return fmt::format(QuantFormat, magic_enum::enum_name(quant), names[index], selectionFrom, self(self, names, index + 1));
             }
         };
-        return result + fmt::format(WhereFormat, buildSelection(buildSelection, stmt.varNames, 0));
+        return result + fmt::format(WhereFormat, buildSelection(buildSelection, stmt->varNames, 0));
+    }
+
+    static std::string translateAssignmentStatement(Context& context, const lang::ast::AssignmentStatementPtr& stmt)
+    {
+        std::string result;
+        std::visit([&](auto&& ptr)
+        {
+            using T = std::decay_t<decltype(ptr)>;
+            if constexpr (std::is_same_v<T, lang::ast::LiteralPtr>)
+            {
+                std::visit([&](auto&& value)
+                {
+                    using M = std::decay_t<decltype(value)>;
+                    if constexpr (std::is_same_v<M, std::string> or std::is_same_v<M, std::int64_t> or std::is_same_v<M, bool>)
+                    {
+                        result = fmt::format(WithVariableFormat, value, stmt->name);
+                    }
+                    // TODO: Add set translator
+                }, ptr->value);
+            }
+        }, *stmt->valueExpr);
+        return result;
     }
     
-    static std::string translateQuantifierStatement(const lang::ast::QuantifierStatement& stmt)
+    static std::string translateQuantifierStatement(Context& context, const lang::ast::QuantifierStatementPtr& stmt)
     {
         // TODO: ExperssionPtr - implement base translator
-        Context context;
-        switch (stmt.type)
+        switch (stmt->type)
         {
             case lang::ast::QuantifierType::ALL:
-                return translateSelectionStatement<lang::ast::QuantifierType::ALL>(context, *stmt.body);
+                return translateSelectionStatement<lang::ast::QuantifierType::ALL>(context, stmt->body);
             case lang::ast::QuantifierType::ANY:
-                return translateSelectionStatement<lang::ast::QuantifierType::ANY>(context, *stmt.body);
+                return translateSelectionStatement<lang::ast::QuantifierType::ANY>(context, stmt->body);
             default:
                 throw std::runtime_error("Неизвестный тип квантора");
         }

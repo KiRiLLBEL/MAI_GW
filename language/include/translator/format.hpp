@@ -11,8 +11,8 @@ namespace cypher {
     static constexpr auto WhereFormat = "WHERE {}"sv;
     static constexpr auto QuantFormat = "{}({} IN {} WHERE {})"sv;
     static constexpr auto MatchFormat = "MATCH (obj:{})"sv;
-    static constexpr auto WithFormat = "WITH collect(obj) AS {}"sv;
-
+    static constexpr auto WithCollectFormat = "WITH collect(obj) AS {}"sv;
+    static constexpr auto WithVariableFormat = "WITH {} AS {}"sv;
     static constexpr auto SuperSetsContainsError = "Variable [{}] not in super set"sv;
     static constexpr auto SelectionFromRouteError = "Selection must be from route function"sv; 
 }
