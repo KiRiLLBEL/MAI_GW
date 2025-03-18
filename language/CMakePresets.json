@@ -1,0 +1,76 @@
+{
+    "version": 4,
+    "configurePresets": [
+        {
+            "name": "debug",
+            "displayName": "Debug Build",
+            "generator": "Ninja",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_CXX_STANDARD": "23",
+                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -Werror -std=c++23"
+            }
+        },
+        {
+            "name": "sanitazers",
+            "displayName": "Sanitazers Build",
+            "generator": "Ninja",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_CXX_STANDARD": "23",
+                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -Werror -std=c++23 -fsanitize=address,undefined,leak -fno-omit-frame-pointer -g",
+                "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address,undefined,leak"
+            }
+        },
+        {
+            "name": "release",
+            "displayName": "Release Build",
+            "generator": "Ninja",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_CXX_STANDARD": "23",
+                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -O3 -std=c++23",
+                "BUILD_TESTING": "OFF"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "debug",
+            "configurePreset": "debug"
+        },
+        {
+            "name": "release",
+            "configurePreset": "release"
+        },
+        {
+            "name": "sanitazers",
+            "description": "Build using Clang with sanitizers",
+            "configurePreset": "sanitazers",
+            "jobs": 8,
+            "verbose": true
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "debug",
+            "configurePreset": "debug",
+            "output": {
+                "outputOnFailure": true
+            },
+            "execution": {
+                "noTestsAction": "error",
+                "stopOnFailure": false
+            }
+        }
+    ]
+}

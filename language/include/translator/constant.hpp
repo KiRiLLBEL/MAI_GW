@@ -3,22 +3,17 @@
 #include <string>
 #include <unordered_set>
 
-namespace cypher{
-    using namespace std::literals::string_view_literals;
-    static constexpr auto SystemSet = "system"sv;
-    static constexpr auto ContainerSet = "container"sv;
-    static constexpr auto ComponentSet = "component"sv;
-    static constexpr auto CodeSet = "code"sv;
-    static constexpr auto DeploySet = "deploy"sv;
-    static constexpr auto InfrastructureSet = "infrastructure"sv;
-    static const std::unordered_set SuperSets {
-        SystemSet,
-        ContainerSet,
-        ComponentSet,
-        CodeSet,
-        DeploySet,
-        InfrastructureSet
-    };
+namespace cypher
+{
+using namespace std::literals::string_view_literals;
+static constexpr auto systemSet = "system"sv;
+static constexpr auto containerSet = "container"sv;
+static constexpr auto componentSet = "component"sv;
+static constexpr auto codeSet = "code"sv;
+static constexpr auto deploySet = "deploy"sv;
+static constexpr auto infrastructureSet = "infrastructure"sv;
+static const std::unordered_set superSets{systemSet, containerSet, componentSet,
+                                          codeSet,   deploySet,    infrastructureSet};
 
-    static constexpr auto RouteFunc = "route"sv;
-}
+static constexpr auto routeFunc = "route"sv;
+} // namespace cypher

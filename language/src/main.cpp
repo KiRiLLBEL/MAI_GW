@@ -1,8 +1,8 @@
 #include <algorithm>
 #include <lang/parser.hpp>
 
-#include <ranges>
 #include <iostream>
+#include <ranges>
 int main()
 {
     return 0;

@@ -3,10 +3,10 @@
 #include "expression.hpp"
 
 #include <memory>
-#include <string>
-#include <vector>
 #include <optional>
+#include <string>
 #include <variant>
+#include <vector>
 
 namespace lang::ast
 {
@@ -21,23 +21,17 @@ enum class Priority
 struct AssignmentStatement;
 struct QuantifierStatement;
 struct SelectionStatement;
-struct СonditionalStatement;
+struct ConditionalStatement;
 struct ExceptStatement;
 
 using AssignmentStatementPtr = std::unique_ptr<AssignmentStatement>;
 using QuantifierStatementPtr = std::unique_ptr<QuantifierStatement>;
 using SelectionStatementPtr = std::unique_ptr<SelectionStatement>;
-using СonditionalStatementPtr = std::unique_ptr<СonditionalStatement>;
+using СonditionalStatementPtr = std::unique_ptr<ConditionalStatement>;
 using ExceptStatementPtr = std::unique_ptr<ExceptStatement>;
 
-using Statement = std::variant
-<
-    AssignmentStatementPtr,
-    QuantifierStatementPtr,
-    SelectionStatementPtr,
-    СonditionalStatementPtr,
-    ExceptStatementPtr
->;
+using Statement = std::variant<AssignmentStatementPtr, QuantifierStatementPtr,
+                               SelectionStatementPtr, СonditionalStatementPtr, ExceptStatementPtr>;
 
 using StatementPtr = std::unique_ptr<Statement>;
 
@@ -74,7 +68,7 @@ struct SelectionStatement
     std::optional<StatementPtr> quant;
 };
 
-struct СonditionalStatement
+struct ConditionalStatement
 {
     ExpressionPtr collectionExpr;
     StatementPtr then;
@@ -94,4 +88,4 @@ struct Rule
     BlockPtr calls;
 };
 
-}
+} // namespace lang::ast

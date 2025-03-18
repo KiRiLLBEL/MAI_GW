@@ -44,40 +44,16 @@ using UnaryExprPtr = std::unique_ptr<UnaryExpr>;
 using AccessExprPtr = std::unique_ptr<AccessExpr>;
 using TernaryExprPtr = std::unique_ptr<TernaryExpr>;
 using FunctionCallPtr = std::unique_ptr<FunctionCall>;
-    
 
-using Expression = std::variant
-<
-    LiteralPtr,
-    VariablePtr,
-    BinaryExprPtr,
-    UnaryExprPtr,
-    AccessExprPtr,
-    TernaryExprPtr,
-    FunctionCallPtr
->;
+using Expression = std::variant<LiteralPtr, VariablePtr, BinaryExprPtr, UnaryExprPtr, AccessExprPtr,
+                                TernaryExprPtr, FunctionCallPtr>;
 
 using ExpressionPtr = std::unique_ptr<Expression>;
 
-enum class LiteralType
-{
-    String,
-    Number,
-    Bool,
-    Set
-};
-
 struct Literal
 {
-    LiteralType litType;
 
-    std::variant
-    <
-        std::string,
-        int64_t,
-        bool,
-        std::vector<ExpressionPtr>
-    > value;
+    std::variant<std::string, int64_t, bool, std::vector<ExpressionPtr>> value;
 };
 
 struct Variable
@@ -118,4 +94,4 @@ struct FunctionCall
     std::vector<ExpressionPtr> args;
 };
 
-}
+} // namespace lang::ast
