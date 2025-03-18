@@ -126,7 +126,7 @@ TEST(ParserTestSmoke, UnaryExprSmoke)
     const auto result = lexy::parse<lang::grammar::expression>(str_input, lexy_ext::report_error);
     EXPECT_TRUE(result.has_value());
     EXPECT_FALSE(result.errors());
-    const auto& parsedUnary = *std::get<lang::ast::UnaryExpPtr>(*result.value());
+    const auto& parsedUnary = *std::get<lang::ast::UnaryExprPtr>(*result.value());
     const auto& parsedLiteal = *std::get<lang::ast::LiteralPtr>(*parsedUnary.operand);
     EXPECT_EQ(parsedUnary.op, lang::ast::ExprOpType::NEG);
     EXPECT_EQ(std::get<bool>(parsedLiteal.value), true);

@@ -1,6 +1,9 @@
 #pragma once
 
+#include "fmt/base.h"
 #include "translator/constant.hpp"
+#include <compare>
+#include <cstdint>
 #include <lang/expression.hpp>
 #include <translator/context.hpp>
 #include <string>
@@ -56,7 +59,7 @@ public:
             using T = std::decay_t<decltype(argPtr)>;
 
             if (!argPtr)
-                return std::string(InDevelopmentFormat);
+                return fmt::to_string(InDevelopmentFormat);
 
             if constexpr (std::is_same_v<T, lang::ast::AssignmentStatementPtr>)
             {
@@ -68,11 +71,11 @@ public:
             }
             else if constexpr (std::is_same_v<T, lang::ast::СonditionalStatementPtr>)
             {
-                return std::string(InDevelopmentFormat);
+                return fmt::to_string(InDevelopmentFormat);
             }
             else if constexpr (std::is_same_v<T, lang::ast::ExceptStatementPtr>)
             {
-                return std::string(InDevelopmentFormat);
+                return fmt::to_string(InDevelopmentFormat);
             }
             else
             {
@@ -80,6 +83,57 @@ public:
             }
         }, 
         statement);
+    }
+    static constexpr auto inVisitor(auto&& arg) -> std::string
+    {
+        using T = std::decay_t<decltype(arg)>;
+        if constexpr (std::is_same_v<T, lang::ast::LiteralPtr>)
+        {
+            std::visit([&](auto&& ptr) -> std::string
+            {
+                using M = std::decay_t<decltype(ptr)>;
+                if constexpr (not std::is_same_v<M, std::vector<lang::ast::ExpressionPtr>>)
+                {
+                    return fmt::to_string(ptr);
+                }
+                else
+                {
+                    return "";
+                }
+            }, arg->value);
+        }
+        else if constexpr (std::is_same_v<T, lang::ast::VariablePtr>)
+        {
+            return arg->name;
+        }
+        else if constexpr (std::is_same_v<T, lang::ast::AccessExprPtr>)
+        {
+            return fmt::format(fmt::runtime(OperatorMap(arg->op)), translateExpression(arg->operand), arg->prop);
+        }
+        else if constexpr (std::is_same_v<T, lang::ast::UnaryExprPtr>)
+        {
+            return fmt::format(fmt::runtime(OperatorMap(arg->op)), translateExpression(arg->operand));
+        }
+        else if constexpr (std::is_same_v<T, lang::ast::BinaryExprPtr>)
+        {
+            return fmt::format(fmt::runtime(OperatorMap(arg->op)), translateExpression(arg->left), translateExpression(arg->right));
+        }
+        else if constexpr (std::is_same_v<T, lang::ast::TernaryExprPtr>)
+        {
+            return fmt::to_string(InDevelopmentFormat);
+        }
+        else if constexpr (std::is_same_v<T, lang::ast::FunctionCallPtr>)
+        {
+            return fmt::to_string(InDevelopmentFormat);
+        }
+        return "";
+    };
+    static std::string translateExpression(const lang::ast::ExpressionPtr& expr)
+    {
+        return std::visit([&](auto&& arg)
+        {
+            return inVisitor(arg);
+        }, *expr);
     }
 
     template<lang::ast::QuantifierType quant>
@@ -118,11 +172,20 @@ public:
             }
         }, *stmt->collectionExpr);
         context.sets.push(std::unordered_set<std::string_view>());
-        auto buildSelection = [&](auto&& self, const std::vector<std::string>& names, size_t index) -> std::string {
+        auto buildSelection = [&](auto&& self, const std::vector<std::string>& names, size_t index) -> std::string
+        {
             context.sets.top().insert(names[index]);
             if (index == names.size() - 1)
             {
-                return fmt::format(QuantFormat, magic_enum::enum_name(quant), names[index], selectionFrom, "ok");
+                return std::visit([&](auto&& arg) -> std::string {
+                    using T = std::decay_t<decltype(arg)>;
+                
+                    if constexpr (std::is_same_v<T, lang::ast::ExpressionPtr>)
+                    {
+                        return fmt::format(QuantFormat, magic_enum::enum_name(quant), names[index], selectionFrom, translateExpression(arg));
+                    }
+                    return fmt::to_string(InDevelopmentFormat);
+                }, stmt->body);
             }
             else
             {

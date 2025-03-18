@@ -40,7 +40,7 @@ struct FunctionCall;
 using LiteralPtr = std::unique_ptr<Literal>;
 using VariablePtr = std::unique_ptr<Variable>;
 using BinaryExprPtr = std::unique_ptr<BinaryExpr>;
-using UnaryExpPtr = std::unique_ptr<UnaryExpr>;
+using UnaryExprPtr = std::unique_ptr<UnaryExpr>;
 using AccessExprPtr = std::unique_ptr<AccessExpr>;
 using TernaryExprPtr = std::unique_ptr<TernaryExpr>;
 using FunctionCallPtr = std::unique_ptr<FunctionCall>;
@@ -51,7 +51,7 @@ using Expression = std::variant
     LiteralPtr,
     VariablePtr,
     BinaryExprPtr,
-    UnaryExpPtr,
+    UnaryExprPtr,
     AccessExprPtr,
     TernaryExprPtr,
     FunctionCallPtr

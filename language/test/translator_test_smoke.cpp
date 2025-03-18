@@ -25,7 +25,7 @@ TEST(TranslatorTestSmoke, RuleOptionsSmoke)
 
 TEST(TranslatorTestSmoke, SelectionSmoke)
 {
-    const std::string input{R"(exist {s1, s2 in system: s1 > s2})"};
+    const std::string input{R"(exist {s1, s2 in system: s1.test > s2.tech})"};
     const auto str_input = lexy::string_input<lexy::utf8_encoding>(input);
     const auto result = lexy::parse<lang::grammar::quantifier>(str_input, lexy_ext::report_error);
     EXPECT_TRUE(result.has_value());
