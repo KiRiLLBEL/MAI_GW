@@ -1,7 +1,7 @@
 #pragma once
 
 #include <array>
-#include <lang/expression.hpp>
+#include <ast/expression.hpp>
 #include <string>
 #include <unordered_map>
 

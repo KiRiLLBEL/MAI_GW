@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ast/expression.hpp"
+#include <ast/expression.hpp>
 
 #include <lexy/callback.hpp>
 #include <lexy/callback/adapter.hpp>

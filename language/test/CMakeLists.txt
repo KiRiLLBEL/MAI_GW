@@ -37,6 +37,25 @@ target_link_libraries(
     lang
 )
 
+add_executable(
+    json_test_smoke
+    json_test_smoke.cpp
+)
+
+target_link_libraries(
+    json_test_smoke PRIVATE
+    gtest
+    gtest_main
+    lang
+)
+
+target_link_libraries(
+    json_test_smoke PRIVATE
+    gtest
+    gtest_main
+    lang
+)
+
 add_test(
     NAME ParserTestSmoke
     COMMAND parser_test_smoke
@@ -45,4 +64,9 @@ add_test(
 add_test(
     NAME TranslatorTestSmoke
     COMMAND translator_test_smoke
+)
+
+add_test(
+    NAME JsonTestSmoke
+    COMMAND json_test_smoke
 )

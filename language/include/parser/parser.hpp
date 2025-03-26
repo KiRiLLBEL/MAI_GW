@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ast/ast.hpp"
+#include <ast/ast.hpp>
 #include "expressions.hpp"
 #include "identifiers.hpp"
 #include "literals.hpp"

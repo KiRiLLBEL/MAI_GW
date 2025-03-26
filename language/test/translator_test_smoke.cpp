@@ -1,10 +1,10 @@
-// #include <lang/ast.hpp>
+#include <ast/ast.hpp>
 // #include <translator/context.hpp>
 // #include <translator/translator.hpp>
 
-// #include <lang/parser.hpp>
+#include <parser/parser.hpp>
 
-// #include <gtest/gtest.h>
+#include <gtest/gtest.h>
 
 // TEST(TranslatorTestSmoke, RuleOptionsSmoke)
 // {

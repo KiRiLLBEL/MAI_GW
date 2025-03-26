@@ -1,13 +1,13 @@
 #pragma once
-#include "ast/expression.hpp"
-#include "parser/literals.hpp"
 #include <array>
+#include <ast/expression.hpp>
 #include <lexy/callback/adapter.hpp>
 #include <lexy/callback/constant.hpp>
 #include <lexy/callback/container.hpp>
 #include <lexy/callback/object.hpp>
 #include <lexy/callback/string.hpp>
 #include <lexy/dsl.hpp>
+#include <parser/literals.hpp>
 
 #include <lexy/dsl/identifier.hpp>
 #include <lexy/dsl/literal.hpp>

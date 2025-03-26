@@ -1,9 +1,7 @@
 #pragma once
 
-#include "ast/expression.hpp"
-#include "ast/statement.hpp"
-#include "parser/expressions.hpp"
-#include "parser/identifiers.hpp"
+#include <ast/expression.hpp>
+#include <ast/statement.hpp>
 #include <lexy/callback.hpp>
 #include <lexy/callback/adapter.hpp>
 #include <lexy/callback/object.hpp>
@@ -11,6 +9,8 @@
 #include <lexy/dsl/branch.hpp>
 #include <lexy/grammar.hpp>
 #include <memory>
+#include <parser/expressions.hpp>
+#include <parser/identifiers.hpp>
 
 namespace lang::grammar
 {

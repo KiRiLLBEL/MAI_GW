@@ -5,8 +5,8 @@
 #include <translator/format.hpp>
 #include <translator/helpers.hpp>
 
-#include <lang/ast.hpp>
-#include <lang/expression.hpp>
+#include <ast/ast.hpp>
+#include <ast/expression.hpp>
 
 #include <fmt/base.h>
 #include <fmt/format.h>
@@ -29,10 +29,7 @@ public:
     {
         std::ostringstream oss;
         oss << fmt::format(ruleNameFormat, rule.name) << "\n";
-        if (rule.description.has_value())
-        {
-            oss << fmt::format(descriptionFormat, *rule.description) << "\n";
-        }
+        oss << fmt::format(descriptionFormat, rule.description) << "\n";
         oss << fmt::format(priorityFormat, magic_enum::enum_name(rule.priority)) << "\n";
         Context context;
         return oss.str();

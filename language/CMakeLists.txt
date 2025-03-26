@@ -55,8 +55,21 @@ target_sources(
     dsl-parser PRIVATE
     ${PROJECT_SOURCE_DIR}/src/main.cpp
 )
+
 target_link_libraries(
     dsl-parser PRIVATE 
+    lang
+)
+
+add_executable(json-converter)
+target_sources(
+    json-converter PRIVATE
+    ${PROJECT_SOURCE_DIR}/src/json.cpp
+)
+
+
+target_link_libraries(
+    json-converter PRIVATE 
     lang
 )
 
