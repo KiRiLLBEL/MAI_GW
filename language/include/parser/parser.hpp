@@ -17,7 +17,7 @@ struct Block
 {
     static constexpr auto rule = dsl::list(dsl::p<BodyStatement>, dsl::sep(dsl::semicolon));
 
-    static constexpr auto value = lexy::as_list<std::vector<ast::BodyStatementList>> >>
+    static constexpr auto value = lexy::as_list<ast::BodyStatementList> >>
                                   lexy::callback<ast::BlockPtr>(
                                       [](auto &&stmts)
                                       { return std::make_unique<ast::Block>(std::move(stmts)); });

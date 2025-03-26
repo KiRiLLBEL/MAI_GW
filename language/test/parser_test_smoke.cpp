@@ -234,23 +234,23 @@ TEST(ParserTestSmoke, BlockSmoke)
     y = true;
     z = ["token", 1, true];
     all {
-        s1 in s:
+        s1 in component:
             "DMZ" in s1.props:
             exist {
-                p in t:
+                p in code:
                     p.x == true
             }
     };
     all {
-        s1 in s:
+        s1 in deploy:
             "DMZ" in s1.props:
             exist {
-                p in t:
+                p in code:
                     p.x == true
             }
     };
     except exist {
-        s1 in s:
+        s1 in code:
             s1.tech in ["go"]
     }
     )"};
@@ -260,38 +260,38 @@ TEST(ParserTestSmoke, BlockSmoke)
     EXPECT_FALSE(result.errors());
 }
 
-// TEST(ParserTestSmoke, RuleSmoke)
-// {
-//     const std::string input{R"(rule first {
-//         description: "Hello world";
-//         priority: Info;
-//         x = 10;
-//         y = true;
-//         z = ["token", 1, true];
-//         all {
-//             s1 in s:
-//                 "DMZ" in s1.props:
-//                 exist {
-//                     p in t:
-//                         p.x == true
-//                 }
-//         };
-//         all {
-//             s1 in s:
-//                 "DMZ" in s1.props:
-//                 exist {
-//                     p in t:
-//                         p.x == true
-//                 }
-//         };
-//         except exist {
-//             s1 in s:
-//                 s1.tech in ["go"]
-//         }
-//     }
-//     )"};
-//     const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-//     const auto result = lexy::parse<lang::grammar::RuleDecl>(strInput, lexy_ext::report_error);
-//     EXPECT_TRUE(result.has_value());
-//     EXPECT_FALSE(result.errors());
-// }
+TEST(ParserTestSmoke, RuleSmoke)
+{
+    const std::string input{R"(rule first {
+        description: "Hello world";
+        priority: Info;
+        x = 10;
+        y = true;
+        z = ["token", 1, true];
+        all {
+            s1 in system:
+                "DMZ" in s1.props:
+                exist {
+                    p in container:
+                        p.x == true
+                }
+        };
+        all {
+            s1 in system:
+                "DMZ" in s1.props:
+                exist {
+                    p in container:
+                        p.x == true
+                }
+        };
+        except exist {
+            s1 in system:
+                s1.tech in ["go"]
+        }
+    }
+    )"};
+    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
+    const auto result = lexy::parse<lang::grammar::RuleDecl>(strInput, lexy_ext::report_error);
+    EXPECT_TRUE(result.has_value());
+    EXPECT_FALSE(result.errors());
+}
