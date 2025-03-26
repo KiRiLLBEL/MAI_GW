@@ -14,47 +14,51 @@ static constexpr auto priorityFormat = "// [PRIORITY]: {}"sv;
 static constexpr auto inDevelopmentFormat = "// [NOW IN DEVELOPMENT]"sv;
 static constexpr auto whereFormat = "WHERE {}"sv;
 static constexpr auto quantFormat = "{}({} IN {} WHERE {})"sv;
-static constexpr auto matchFormat = "MATCH (obj:{})"sv;
-static constexpr auto withCollectFormat = "WITH collect(obj) AS {}"sv;
+static constexpr auto matchFormat = "MATCH (obj__:{})"sv;
+static constexpr auto withCollectFormat = "WITH collect(obj__) AS {}"sv;
 static constexpr auto withVariableFormat = "WITH {} AS {}"sv;
-
-constexpr auto OperatorMap(const lang::ast::ExprOpType type)
+static constexpr auto withSelectionFormat = "WITH "sv;
+static constexpr auto matchLiteralFormat = "MATCH ({})-->({}) "sv;
+static constexpr auto routeExistFormat = "MATCH route__=({})-[*]->(mid__)-[*]->({})"sv;
+static constexpr auto routeAllFormat = "MATCH route__=({})-[*]->({})"sv;
+static constexpr auto callFormat = "CALL {{ {}\n{} }}"sv;
+constexpr auto OperatorMap(const lang::ast::ExprType type)
 {
     switch (type)
     {
-    case lang::ast::ExprOpType::PLUS:
+    case lang::ast::ExprType::PLUS:
         return "{} + {}"sv;
-    case lang::ast::ExprOpType::MINUS:
+    case lang::ast::ExprType::MINUS:
         return "{} - {}"sv;
-    case lang::ast::ExprOpType::MULT:
+    case lang::ast::ExprType::MULT:
         return "{} * {}"sv;
-    case lang::ast::ExprOpType::DIV:
+    case lang::ast::ExprType::DIV:
         return "{} / {}"sv;
-    case lang::ast::ExprOpType::NEG:
+    case lang::ast::ExprType::NEG:
         return "-{}"sv;
-    case lang::ast::ExprOpType::EQ:
+    case lang::ast::ExprType::EQ:
         return "{} = {}"sv;
-    case lang::ast::ExprOpType::NOT_EQ:
+    case lang::ast::ExprType::NOT_EQ:
         return "{} <> {}"sv;
-    case lang::ast::ExprOpType::LESS:
+    case lang::ast::ExprType::LESS:
         return "{} < {}"sv;
-    case lang::ast::ExprOpType::GREATER:
+    case lang::ast::ExprType::GREATER:
         return "{} > {}"sv;
-    case lang::ast::ExprOpType::LESS_EQ:
+    case lang::ast::ExprType::LESS_EQ:
         return "{} <= {}"sv;
-    case lang::ast::ExprOpType::GREATER_EQ:
+    case lang::ast::ExprType::GREATER_EQ:
         return "{} >= {}"sv;
-    case lang::ast::ExprOpType::IN:
+    case lang::ast::ExprType::IN:
         return "{} IN {}"sv;
-    case lang::ast::ExprOpType::AND:
+    case lang::ast::ExprType::AND:
         return "{} AND {}"sv;
-    case lang::ast::ExprOpType::OR:
+    case lang::ast::ExprType::OR:
         return "{} OR {}"sv;
-    case lang::ast::ExprOpType::XOR:
+    case lang::ast::ExprType::XOR:
         return "{} XOR {}"sv;
-    case lang::ast::ExprOpType::ACCESS:
+    case lang::ast::ExprType::ACCESS:
         return "{}.{}"sv;
-    case lang::ast::ExprOpType::SAFE_ACCESS:
+    case lang::ast::ExprType::SAFE_ACCESS:
         return "exists({}.{})"sv;
     default:
         return ""sv;
