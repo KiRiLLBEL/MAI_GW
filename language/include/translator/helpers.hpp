@@ -2,7 +2,7 @@
 
 #include "constant.hpp"
 #include "context.hpp"
-#include "translator/format.hpp"
+#include <translator/format.hpp>
 
 #include <algorithm>
 #include <ast/expression.hpp>

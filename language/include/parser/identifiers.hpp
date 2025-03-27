@@ -1,5 +1,4 @@
 #pragma once
-#include <array>
 #include <ast/expression.hpp>
 #include <lexy/callback/adapter.hpp>
 #include <lexy/callback/constant.hpp>
