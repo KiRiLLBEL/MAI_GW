@@ -1,5 +1,6 @@
 #pragma once
 #include "ast/expression.hpp"
+#include "ast/statement.hpp"
 #include <algorithm>
 #include <ast/ast.hpp>
 #include <magic_enum/magic_enum.hpp>
@@ -19,7 +20,7 @@ template <typename T> class Serializer
 public:
     nlohmann::json operator()(const T & /*value*/) const
     {
-        return nlohmann::json{{"Unimplemented", "No serialization for this type"}};
+        return nlohmann::json{{"unimplemented", "No serialization for this type"}};
     }
 };
 
@@ -150,9 +151,9 @@ public:
 };
 
 template <template <ExprType> class T, ExprType U>
-concept BinaryExpression = requires(const T<U> &expr) {
-    { expr.left } -> std::convertible_to<ExpressionPtr>;
-    { expr.right } -> std::convertible_to<ExpressionPtr>;
+concept BinaryExpression = requires(T<U> expr) {
+    requires std::same_as<decltype(expr.left), ExpressionPtr>;
+    requires std::same_as<decltype(expr.right), ExpressionPtr>;
 };
 
 template <template <ExprType> class T, ExprType U>
@@ -278,6 +279,19 @@ public:
         jOut["type"] = type;
         jOut["expression"] = Serializer<StatementExpressionPtr>{}(stmt.expr);
         jOut["quantifier"] = Serializer<QuantifierPtr>{}(stmt.quant);
+        return jOut;
+    }
+};
+
+template <> class Serializer<ExceptStatement>
+{
+public:
+    nlohmann::json operator()(const ExceptStatement &stmt) const
+    {
+        static constexpr auto type = "except-statement";
+        nlohmann::json jOut;
+        jOut["type"] = type;
+        jOut["statement"] = Serializer<QuantifierPtr>{}(stmt.inner);
         return jOut;
     }
 };

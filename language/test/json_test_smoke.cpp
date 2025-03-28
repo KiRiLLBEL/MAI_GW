@@ -67,6 +67,18 @@ TEST(TestJsonSmoke, TernarySmoke)
     GTEST_LOG_(INFO) << jsonResult;
 }
 
+TEST(TestJsonSmoke, AddSmoke)
+{
+    const std::string input{"2 + 4"};
+    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
+    const auto result =
+        lexy::parse<lang::grammar::ExpressionProduct>(strInput, lexy_ext::report_error);
+    EXPECT_TRUE(result.has_value());
+    const auto jsonResult = lang::ast::json::Serialize(result.value());
+    EXPECT_TRUE(not jsonResult.empty());
+    GTEST_LOG_(INFO) << jsonResult;
+}
+
 TEST(TestJsonSmoke, AssignmentSmoke)
 {
     const std::string input{"x = 5"};
