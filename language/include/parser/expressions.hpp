@@ -2,6 +2,7 @@
 
 #include <ast/expression.hpp>
 #include <functional>
+#include <lexy/dsl/expression.hpp>
 #include <parser/identifiers.hpp>
 #include <parser/literals.hpp>
 
@@ -50,7 +51,7 @@ struct NestedExpr : lexy::transparent_production
 struct FactorExpr
 {
     static constexpr auto rule = dsl::parenthesized(dsl::p<NestedExpr>) | dsl::p<Keyword> |
-                                 dsl::p<Literal> | dsl::p<Variable> | dsl::p<FunctionCall>;
+                                 dsl::p<Literal> | dsl::p<IdentifierExpr> | dsl::p<Variable>;
     static constexpr auto value = lexy::forward<ast::ExpressionPtr>;
 };
 

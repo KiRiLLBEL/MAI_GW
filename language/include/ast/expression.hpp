@@ -36,7 +36,8 @@ enum class KeywordSets
     COMPONENT,
     CODE,
     DEPLOY,
-    INFRASTRUCTURE
+    INFRASTRUCTURE,
+    NONE
 };
 
 template <KeywordSets> struct KeywordExpr;
@@ -58,6 +59,7 @@ using ComponentPtr = std::unique_ptr<KeywordExpr<KeywordSets::COMPONENT>>;
 using CodePtr = std::unique_ptr<KeywordExpr<KeywordSets::CODE>>;
 using DeployPtr = std::unique_ptr<KeywordExpr<KeywordSets::DEPLOY>>;
 using InfrastructurePtr = std::unique_ptr<KeywordExpr<KeywordSets::INFRASTRUCTURE>>;
+using NonePtr = std::unique_ptr<KeywordExpr<KeywordSets::NONE>>;
 using NumberPtr = std::unique_ptr<LiteralExpr<int64_t>>;
 using StringPtr = std::unique_ptr<LiteralExpr<std::string>>;
 using BoolPtr = std::unique_ptr<LiteralExpr<bool>>;
@@ -85,10 +87,10 @@ using TernaryExprPtr = std::unique_ptr<TernaryExpr>;
 
 using Expression =
     std::variant<SystemPtr, ContainerPtr, ComponentPtr, CodePtr, DeployPtr, InfrastructurePtr,
-                 NumberPtr, StringPtr, BoolPtr, SetPtr, VariablePtr, CallPtr, AccessExprPtr,
-                 SafeAccessExprPtr, NegationPtr, MultiplyPtr, DivisionPtr, AddPtr, MinusPtr,
-                 EqualPtr, NotEqualPtr, LessPtr, GreaterPtr, GreateEqualPtr, LessEqualPtr, AndPtr,
-                 OrPtr, XorPtr, InPtr, TernaryExprPtr>;
+                 NonePtr, NumberPtr, StringPtr, BoolPtr, SetPtr, VariablePtr, CallPtr,
+                 AccessExprPtr, SafeAccessExprPtr, NegationPtr, MultiplyPtr, DivisionPtr, AddPtr,
+                 MinusPtr, EqualPtr, NotEqualPtr, LessPtr, GreaterPtr, GreateEqualPtr, LessEqualPtr,
+                 AndPtr, OrPtr, XorPtr, InPtr, TernaryExprPtr>;
 
 using ExpressionPtr = std::unique_ptr<Expression>;
 

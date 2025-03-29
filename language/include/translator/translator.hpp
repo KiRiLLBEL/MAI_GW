@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ast/statement.hpp"
 #include <translator/constant.hpp>
 #include <translator/context.hpp>
 #include <translator/format.hpp>
@@ -8,247 +9,389 @@
 #include <ast/ast.hpp>
 #include <ast/expression.hpp>
 
+#include <fmt/args.h>
 #include <fmt/base.h>
 #include <fmt/format.h>
+#include <fmt/ranges.h>
 
 #include <magic_enum/magic_enum.hpp>
 
-#include <compare>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <variant>
-namespace cypher
+
+namespace lang::ast::cypher
 {
 
-class Translator
+using TranslationResult = std::string;
+
+namespace
+{
+
+class QuantifierGuard
 {
 public:
-    static std::string RuleTranslate(const lang::ast::Rule &rule)
+    explicit QuantifierGuard(TranslatorContext &ctx) : ctx_(ctx)
     {
-        std::ostringstream oss;
-        oss << fmt::format(ruleNameFormat, rule.name) << "\n";
-        oss << fmt::format(descriptionFormat, rule.description) << "\n";
-        oss << fmt::format(priorityFormat, magic_enum::enum_name(rule.priority)) << "\n";
-        Context context;
-        return oss.str();
+        ++ctx.quantifierLevel;
     }
 
-    static std::string BlockIter(Context &context, const lang::ast::Block &block)
+    ~QuantifierGuard()
     {
-        std::ostringstream oss;
-
-        for (const auto &stmtPtr : block.statements)
-        {
-            if (!stmtPtr)
-            {
-                continue;
-            }
-            oss << StmtVisit(context, *stmtPtr);
-            oss << "\n";
-        }
-
-        return oss.str();
+        --ctx_.quantifierLevel;
     }
 
-    static std::string StmtVisit(Context &context, const lang::ast::Statement &statement)
+private:
+    TranslatorContext &ctx_;
+};
+
+class TranslatorBase
+{
+protected:
+    TranslatorContext &ctx;
+
+public:
+    explicit TranslatorBase(TranslatorContext &context) : ctx(context)
     {
-        return std::visit(
-            [&](auto &&argPtr) -> std::string
-            {
-                using T = std::decay_t<decltype(argPtr)>;
-
-                if (!argPtr)
-                {
-                    return fmt::to_string(inDevelopmentFormat);
-                }
-
-                if constexpr (std::is_same_v<T, lang::ast::AssignmentStatementPtr>)
-                {
-                    return AssignStmt(context, argPtr);
-                }
-                else if constexpr (std::is_same_v<T, lang::ast::QuantifierStatementPtr>)
-                {
-                    return QuantStmt(context, argPtr);
-                }
-                else if constexpr (std::is_same_v<T, lang::ast::СonditionalStatementPtr>)
-                {
-                    return fmt::to_string(inDevelopmentFormat);
-                }
-                else if constexpr (std::is_same_v<T, lang::ast::ExceptStatementPtr>)
-                {
-                    return fmt::to_string(inDevelopmentFormat);
-                }
-                else
-                {
-                    throw std::runtime_error("Unknown Statement type in translateStatement");
-                }
-            },
-            statement);
     }
-    static constexpr auto ExprInVisitor(auto &&arg) -> std::string
+    virtual ~TranslatorBase() = default;
+};
+} // namespace
+
+template <typename T> class Translator : TranslatorBase
+{
+public:
+    TranslationResult operator()(const T & /*unused*/) const
     {
-        using T = std::decay_t<decltype(arg)>;
-        if constexpr (std::is_same_v<T, lang::ast::LiteralPtr>)
-        {
-            std::visit(
-                [&](auto &&ptr) -> std::string
-                {
-                    using M = std::decay_t<decltype(ptr)>;
-                    if constexpr (not std::is_same_v<M, std::vector<lang::ast::ExpressionPtr>>)
-                    {
-                        return fmt::to_string(ptr);
-                    }
-                    else
-                    {
-                        return "";
-                    }
-                },
-                arg->value);
-        }
-        else if constexpr (std::is_same_v<T, lang::ast::VariablePtr>)
-        {
-            return arg->name;
-        }
-        else if constexpr (std::is_same_v<T, lang::ast::AccessExprPtr>)
-        {
-            return fmt::format(fmt::runtime(OperatorMap(arg->op)), ExprVisit(arg->operand),
-                               arg->prop);
-        }
-        else if constexpr (std::is_same_v<T, lang::ast::UnaryExprPtr>)
-        {
-            return fmt::format(fmt::runtime(OperatorMap(arg->op)), ExprVisit(arg->operand));
-        }
-        else if constexpr (std::is_same_v<T, lang::ast::BinaryExprPtr>)
-        {
-            return fmt::format(fmt::runtime(OperatorMap(arg->op)), ExprVisit(arg->left),
-                               ExprVisit(arg->right));
-        }
-        else if constexpr (std::is_same_v<T, lang::ast::TernaryExprPtr>)
-        {
-            return fmt::to_string(inDevelopmentFormat);
-        }
-        else if constexpr (std::is_same_v<T, lang::ast::CallPtr>)
-        {
-            return fmt::to_string(inDevelopmentFormat);
-        }
-        return "";
-    };
-    static std::string ExprVisit(const lang::ast::ExpressionPtr &expr)
-    {
-        return std::visit([&](auto &&arg) { return ExprInVisitor(arg); }, *expr);
-    }
-
-    template <lang::ast::QuantifierType quant>
-    static std::string SelectionStmt(Context &context, const lang::ast::SelectionStatementPtr &stmt)
-    {
-        std::string info{};
-        const auto selectionFrom = std::visit(
-            [&](auto &&arg) -> std::string
-            {
-                using T = std::decay_t<decltype(arg)>;
-                if constexpr (std::is_same_v<T, lang::ast::VariablePtr>)
-                {
-                    if (not LiteralInSuperSet(arg) and not LiteralInContext(context, arg))
-                    {
-                        throw std::runtime_error(fmt::format(superSetsContainsError, arg->name));
-                    }
-                    if (LiteralInSuperSet(arg))
-                    {
-                        info = fmt::format(matchFormat, arg->name) + "\n" +
-                               fmt::format(withCollectFormat, arg->name) + "\n";
-                    }
-                    return arg->name;
-                }
-                if constexpr (std::is_same_v<T, lang::ast::CallPtr>)
-                {
-                    if (not FuncCallEqualName(arg, routeFunc))
-                    {
-                        throw std::runtime_error(fmt::format(selectionFromRouteError));
-                    }
-
-                    info = fmt::format(quant == lang::ast::QuantifierType::ALL ? routeAllFormat
-                                                                               : routeExistFormat,
-                                       ExprVisit(arg->args.at(0)), ExprVisit(arg->args.at(1)));
-                    return "route__";
-                }
-                throw std::runtime_error{"No valid AST tree"};
-            },
-            *stmt->collectionExpr);
-        context.sets.emplace();
-        auto buildSelection = [&](auto &&self, const std::vector<std::string> &names,
-                                  size_t index) -> std::string
-        {
-            context.sets.top().insert(names[index]);
-            if (index == names.size() - 1)
-            {
-                return std::visit(
-                    [&](auto &&arg) -> std::string
-                    {
-                        using T = std::decay_t<decltype(arg)>;
-
-                        if constexpr (std::is_same_v<T, lang::ast::ExpressionPtr>)
-                        {
-                            return fmt::format(quantFormat, magic_enum::enum_name(quant),
-                                               names[index], selectionFrom, ExprVisit(arg));
-                        }
-                        if constexpr (std::is_same_v<T, lang::ast::StatementPtr>)
-                        {
-                            return fmt::format(callFormat, CreateMatchForCall(names),
-                                               StmtVisit(context, *arg));
-                        }
-                        return fmt::to_string(inDevelopmentFormat);
-                    },
-                    stmt->body);
-            }
-
-            return fmt::format(quantFormat, magic_enum::enum_name(quant), names[index],
-                               selectionFrom, self(self, names, index + 1));
-        };
-        return info + fmt::format(whereFormat, buildSelection(buildSelection, stmt->varNames, 0));
-    }
-
-    static std::string AssignStmt(Context & /*unused*/,
-                                  const lang::ast::AssignmentStatementPtr &stmt)
-    {
-        std::string result;
-        std::visit(
-            [&](auto &&ptr)
-            {
-                using T = std::decay_t<decltype(ptr)>;
-                if constexpr (std::is_same_v<T, lang::ast::LiteralPtr>)
-                {
-                    std::visit(
-                        [&](auto &&value)
-                        {
-                            using M = std::decay_t<decltype(value)>;
-                            if constexpr (std::is_same_v<M, std::string> or
-                                          std::is_same_v<M, std::int64_t> or
-                                          std::is_same_v<M, bool>)
-                            {
-                                result = fmt::format(withVariableFormat, value, stmt->name);
-                            }
-                            // TODO: Add set translator
-                        },
-                        ptr->value);
-                }
-            },
-            *stmt->valueExpr);
-        return result;
-    }
-
-    static std::string QuantStmt(Context &context, const lang::ast::QuantifierStatementPtr &stmt)
-    {
-        switch (stmt->type)
-        {
-        case lang::ast::QuantifierType::ALL:
-            return SelectionStmt<lang::ast::QuantifierType::ALL>(context, stmt->body);
-        case lang::ast::QuantifierType::ANY:
-            return SelectionStmt<lang::ast::QuantifierType::ANY>(context, stmt->body);
-        default:
-            throw std::runtime_error("Неизвестный тип квантора");
-        }
+        return "unimplemented translation";
     }
 };
-}; // namespace cypher
+
+template <typename... Ts> class Translator<std::variant<Ts...>> : TranslatorBase
+{
+public:
+    using TranslatorBase::TranslatorBase;
+    TranslationResult operator()(const std::variant<Ts...> &var) const
+    {
+        return std::visit([&](auto &subValue) -> TranslationResult
+                          { return Translator<std::decay_t<decltype(subValue)>>{ctx}(subValue); },
+                          var);
+    }
+};
+
+template <typename T> class Translator<std::unique_ptr<T>> : TranslatorBase
+{
+public:
+    using TranslatorBase::TranslatorBase;
+    TranslationResult operator()(const std::unique_ptr<T> &ptr) const
+    {
+        if (!ptr)
+        {
+            throw std::runtime_error{"broken AST: ptr is null in translator"};
+        }
+        return Translator<T>{ctx}(*ptr);
+    }
+};
+
+template <KeywordSets K> class Translator<KeywordExpr<K>> : TranslatorBase
+{
+public:
+    using TranslatorBase::TranslatorBase;
+    TranslationResult operator()(const KeywordExpr<K> & /*unused*/) const
+    {
+        return KeywordMap(K);
+    }
+};
+
+template <typename T> class Translator<LiteralExpr<T>> : TranslatorBase
+{
+public:
+    using TranslatorBase::TranslatorBase;
+    TranslationResult operator()(const LiteralExpr<T> &lit) const
+    {
+        if constexpr (std::is_same_v<T, std::string>)
+        {
+            return fmt::format("\"{}\"", lit.value);
+        }
+        return fmt::to_string(lit.value);
+    }
+};
+
+template <> class Translator<SetExpr> : TranslatorBase
+{
+public:
+    using TranslatorBase::TranslatorBase;
+    TranslationResult operator()(const SetExpr &expr) const
+    {
+        return fmt::format(
+            "[{}]",
+            fmt::join(expr.items | std::views::transform(Translator<ExpressionPtr>{ctx}), ", "));
+    }
+};
+
+template <> class Translator<VariableExpr> : TranslatorBase
+{
+public:
+    using TranslatorBase::TranslatorBase;
+    TranslationResult operator()(const VariableExpr &var) const
+    {
+        if (not ctx.variableTable.contains(var.name))
+        {
+            throw ErrorHelper(variableError, var.name);
+        }
+        return var.name;
+    }
+};
+
+template <ExprType K> class Translator<AccessExpr<K>> : TranslatorBase
+{
+public:
+    using TranslatorBase::TranslatorBase;
+    TranslationResult operator()(const AccessExpr<K> &expr) const
+    {
+        return fmt::format(fmt::runtime(OperatorMap(K)),
+                           Translator<ExpressionPtr>{ctx}(expr.operand), expr.prop);
+    }
+};
+
+template <ExprType K> class Translator<UnaryExpr<K>> : TranslatorBase
+{
+public:
+    using TranslatorBase::TranslatorBase;
+    TranslationResult operator()(const UnaryExpr<K> &expr) const
+    {
+        return fmt::format(fmt::runtime(OperatorMap(K)),
+                           Translator<ExpressionPtr>{ctx}(expr.operand));
+    }
+};
+
+template <> class Translator<CallExpr> : TranslatorBase
+{
+public:
+    using TranslatorBase::TranslatorBase;
+    TranslationResult operator()(const CallExpr &expr) const
+    {
+        if (not functionMap.contains(expr.functionName))
+        {
+            throw ErrorHelper(functionError, expr.functionName);
+        }
+        fmt::dynamic_format_arg_store<fmt::format_context> store;
+        for (const auto &arg : expr.args | std::views::transform(Translator<ExpressionPtr>{ctx}))
+        {
+            store.push_back(arg);
+        }
+        return fmt::vformat(functionMap.at(expr.functionName), store);
+    }
+};
+
+template <template <ExprType> class T, ExprType U>
+concept BinaryExpression = requires(T<U> tmp) {
+    requires std::same_as<decltype(tmp.left), ExpressionPtr>;
+    requires std::same_as<decltype(tmp.right), ExpressionPtr>;
+};
+
+template <template <ExprType> class T, ExprType U>
+    requires BinaryExpression<T, U>
+class Translator<T<U>> : TranslatorBase
+{
+public:
+    using TranslatorBase::TranslatorBase;
+    TranslationResult operator()(const T<U> &expr) const
+    {
+        return fmt::format(fmt::runtime(OperatorMap(U)), Translator<ExpressionPtr>{ctx}(expr.left),
+                           Translator<ExpressionPtr>{ctx}(expr.right));
+    }
+};
+
+template <> class Translator<TernaryExpr> : TranslatorBase
+{
+public:
+    using TranslatorBase::TranslatorBase;
+    TranslationResult operator()(const TernaryExpr &expr) const
+    {
+
+        return fmt::format(ternaryFormat, Translator<ExpressionPtr>{ctx}(expr.condition),
+                           Translator<ExpressionPtr>{ctx}(expr.thenExpr),
+                           Translator<ExpressionPtr>{ctx}(expr.elseExpr));
+    }
+};
+
+template <> class Translator<AssignmentStatement> : TranslatorBase
+{
+public:
+    using TranslatorBase::TranslatorBase;
+    TranslationResult operator()(const AssignmentStatement &stmt) const
+    {
+        return fmt::format(withAssignmentFormat, Translator<ExpressionPtr>{ctx}(stmt.valueExpr),
+                           stmt.name);
+    }
+};
+
+auto FormatSelectionArgs(const std::vector<std::string> &args, const ExpressionPtr &source,
+                         TranslatorContext &ctx) -> std::string
+{
+    return std::visit(
+        [&ctx, &args](auto &&elem) -> std::string
+        {
+            using T = std::decay_t<decltype(elem)>;
+            if constexpr (std::is_same_v<T, CallPtr>)
+            {
+                std::string result = fmt::format("MATCH p = {}", Translator<CallPtr>{ctx}(elem));
+                for (const auto &arg : args)
+                {
+                    result += fmt::format(" UNWIND nodes(p) AS {}", arg);
+                    ctx.variableTable.insert(arg);
+                }
+                result += " WHERE";
+                for (size_t i = 0; i < args.size(); ++i)
+                {
+                    for (size_t j = i + 1; j < args.size(); ++j)
+                    {
+                        result += fmt::format(" {} <> {} AND", args[i], args[j]);
+                    }
+                }
+                return result;
+            }
+            if constexpr (std::is_same_v<T, SystemPtr> || std::is_same_v<T, ContainerPtr> ||
+                          std::is_same_v<T, ComponentPtr> || std::is_same_v<T, CodePtr> ||
+                          std::is_same_v<T, DeployPtr> || std::is_same_v<T, InfrastructurePtr>)
+            {
+                std::string result = "MATCH";
+                for (const auto &arg : args)
+                {
+                    result += fmt::format(" ({}:{})", arg, Translator<T>{ctx}(elem));
+                    ctx.variableTable.insert(arg);
+                }
+                result += " WHERE";
+                for (size_t i = 0; i < args.size(); ++i)
+                {
+                    for (size_t j = i + 1; j < args.size(); ++j)
+                    {
+                        result += fmt::format(" {} <> {} AND", args[i], args[j]);
+                    }
+                }
+                return result;
+            }
+            throw std::runtime_error{"unsupported type of source"};
+        },
+        *source);
+}
+
+template <QuantifierType Q> class Translator<QuantifierStatement<Q>> : TranslatorBase
+{
+public:
+    using TranslatorBase::TranslatorBase;
+    TranslationResult operator()(const QuantifierStatement<Q> &stmt) const
+    {
+        QuantifierGuard guard{ctx};
+        if (ctx.quantifierLevel == 1)
+        {
+            return fmt::format(
+                fmt::runtime(QuantifierStartMap(Q)),
+                FormatSelectionArgs(stmt.body->identifiersList, stmt.body->source, ctx),
+                Translator<PredicatePtr>{ctx}(stmt.body->predicate));
+        }
+        return fmt::format(fmt::runtime(QuantifierMap(Q)),
+                           FormatSelectionArgs(stmt.body->identifiersList, stmt.body->source, ctx),
+                           Translator<PredicatePtr>{ctx}(stmt.body->predicate));
+    }
+};
+
+template <> class Translator<SelectionStatement> : TranslatorBase
+{
+public:
+    using TranslatorBase::TranslatorBase;
+    TranslationResult operator()(const SelectionStatement & /*unused*/) const
+    {
+        throw std::runtime_error{"BUG"};
+    }
+};
+
+template <> class Translator<IfThen> : TranslatorBase
+{
+public:
+    using TranslatorBase::TranslatorBase;
+    TranslationResult operator()(const IfThen &stmt) const
+    {
+        return fmt::format(ifThenFormat, Translator<ExpressionPtr>{ctx}(stmt.expr),
+                           Translator<PredicatePtr>{ctx}(stmt.then));
+    }
+};
+
+template <> class Translator<IfThenElse> : TranslatorBase
+{
+public:
+    using TranslatorBase::TranslatorBase;
+    TranslationResult operator()(const IfThenElse &stmt) const
+    {
+        return fmt::format(ifThenElseFormat, Translator<ExpressionPtr>{ctx}(stmt.expr),
+                           Translator<PredicatePtr>{ctx}(stmt.then),
+                           Translator<PredicatePtr>{ctx}(stmt.els));
+    }
+};
+
+template <> class Translator<StatementExpression> : TranslatorBase
+{
+public:
+    using TranslatorBase::TranslatorBase;
+    TranslationResult operator()(const StatementExpression &stmt) const
+    {
+        return Translator<ExpressionPtr>{ctx}(stmt.expr);
+    }
+};
+
+template <> class Translator<FilteredStatement> : TranslatorBase
+{
+public:
+    using TranslatorBase::TranslatorBase;
+    TranslationResult operator()(const FilteredStatement &stmt) const
+    {
+        return fmt::format("{} AND {}", Translator<StatementExpressionPtr>{ctx}(stmt.expr),
+                           Translator<QuantifierPtr>{ctx}(stmt.quant));
+    }
+};
+
+template <> class Translator<ExceptStatement> : TranslatorBase
+{
+public:
+    using TranslatorBase::TranslatorBase;
+    TranslationResult operator()(const ExceptStatement &stmt) const
+    {
+        return fmt::format("AND NOT ( {} )", Translator<QuantifierPtr>{ctx}(stmt.inner));
+    }
+};
+
+template <> class Translator<Block> : TranslatorBase
+{
+public:
+    using TranslatorBase::TranslatorBase;
+    TranslationResult operator()(const Block &stmt) const
+    {
+        return fmt::to_string(fmt::join(
+            stmt.statements | std::views::transform(Translator<BodyStatementPtr>{ctx}), " "));
+    }
+};
+
+template <> class Translator<Rule> : TranslatorBase
+{
+public:
+    using TranslatorBase::TranslatorBase;
+    TranslationResult operator()(const Rule &stmt) const
+    {
+        std::string result = fmt::format(ruleNameFormat, stmt.name);
+        result += "\n" + fmt::format(descriptionFormat, stmt.description);
+        result += "\n" + fmt::format(priorityFormat, magic_enum::enum_name(stmt.priority)) + "\n";
+        return result + Translator<BlockPtr>{ctx}(stmt.calls);
+    }
+};
+
+template <typename U> TranslationResult Translate(U &&value)
+{
+    using CleanType = std::decay_t<U>;
+    TranslatorContext context;
+    Translator<CleanType> translator{context};
+    return translator(std::forward<U>(value));
+}
+
+}; // namespace lang::ast::cypher

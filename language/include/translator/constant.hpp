@@ -1,19 +1,18 @@
 #pragma once
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 
-namespace cypher
+namespace lang::ast::cypher
 {
-using namespace std::literals::string_view_literals;
-static constexpr auto systemSet = "system"sv;
-static constexpr auto containerSet = "container"sv;
-static constexpr auto componentSet = "component"sv;
-static constexpr auto codeSet = "code"sv;
-static constexpr auto deploySet = "deploy"sv;
-static constexpr auto infrastructureSet = "infrastructure"sv;
-static const std::unordered_set superSets{systemSet, containerSet, componentSet,
-                                          codeSet,   deploySet,    infrastructureSet};
+using namespace std::string_literals;
 
-static constexpr auto routeFunc = "route"sv;
-} // namespace cypher
+static const auto routeFunction = "({})-[*1..]->({})"s;
+static const auto crossFunction = "[ x IN {} WHERE x IN {} ]"s;
+static const auto unionFunction =
+    "WITH {} + {} AS combined UNWIND combined AS item RETURN collect(DISTINCT item) AS unionSet"s;
+
+static const std::unordered_map<std::string, std::string> functionMap{
+    {"route", routeFunction}, {"cross", crossFunction}, {"union", unionFunction}};
+} // namespace lang::ast::cypher

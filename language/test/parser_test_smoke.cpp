@@ -135,6 +135,18 @@ TEST(ParserTestSmoke, UnaryExprSmoke)
     EXPECT_EQ(parsedLiteal.value, true);
 }
 
+TEST(ParserTestSmoke, FunctionCallSmoke)
+{
+    const std::string input{"route{s1, s2}"};
+    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
+    const auto result =
+        lexy::parse<lang::grammar::ExpressionProduct>(strInput, lexy_ext::report_error);
+    ASSERT_TRUE(result.has_value());
+    EXPECT_FALSE(result.errors());
+    const auto &parsedProperty = *std::get<lang::ast::CallPtr>(*result.value());
+    EXPECT_EQ(parsedProperty.functionName, "route");
+}
+
 TEST(ParserTestSmoke, PropertySmoke)
 {
     const std::string input{"test.!op"};

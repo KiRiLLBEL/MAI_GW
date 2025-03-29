@@ -2,35 +2,27 @@
 
 #include "constant.hpp"
 #include "context.hpp"
+#include "fmt/base.h"
+#include "fmt/format.h"
+#include "translator/translator.hpp"
+#include <cstddef>
+#include <stdexcept>
+#include <string_view>
 #include <translator/format.hpp>
 
 #include <algorithm>
 #include <ast/expression.hpp>
 #include <ranges>
+#include <type_traits>
 #include <vector>
 
-namespace cypher
+namespace lang::ast::cypher
 {
-inline bool LiteralInSuperSet(const lang::ast::VariablePtr &lit)
+
+template <typename... Args>
+auto ErrorHelper(std::string_view error, Args... args) -> std::runtime_error
 {
-    return superSets.contains(lit->name);
+    return std::runtime_error{fmt::format(fmt::runtime(error), args...)};
 }
 
-inline bool LiteralInContext(const Context &context, const lang::ast::VariablePtr &lit)
-{
-    return context.sets.empty() ? false : context.sets.top().contains(lit->name);
-}
-
-inline bool FuncCallEqualName(const lang::ast::CallPtr &funcCall, std::string_view name)
-{
-    return funcCall->functionName == name;
-}
-
-inline std::string CreateMatchForCall(const std::vector<std::string> &names)
-{
-    std::string result{withSelectionFormat};
-    std::ranges::for_each(names, [&result](const auto &name) { result += name + ", "; });
-    return result;
-}
-
-}; // namespace cypher
+}; // namespace lang::ast::cypher

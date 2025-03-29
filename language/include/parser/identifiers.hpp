@@ -56,14 +56,18 @@ struct FuncArgs : lexy::token_production
     static constexpr auto value = lexy::as_list<std::vector<ast::ExpressionPtr>>;
 };
 
-struct FunctionCall
+struct IdentifierExpr
 {
-    static constexpr auto rule = dsl::p<Identifier> >> dsl::p<FuncArgs>;
+    static constexpr auto rule = dsl::p<Identifier> >> dsl::opt(dsl::p<FuncArgs>);
     static constexpr auto value = lexy::callback<ast::ExpressionPtr>(
-        [](std::string name, std::vector<ast::ExpressionPtr> args)
+        [](std::string &&name, lexy::nullopt &&) -> ast::ExpressionPtr {
+            return std::make_unique<ast::Expression>(
+                std::make_unique<ast::VariableExpr>(std::move(name)));
+        },
+        [](std::string &&name, auto &&lst) -> ast::ExpressionPtr
         {
             return std::make_unique<ast::Expression>(
-                std::make_unique<ast::CallExpr>(std::move(name), std::move(args)));
+                std::make_unique<ast::CallExpr>(std::move(name), std::move(lst)));
         });
 };
 
@@ -99,6 +103,13 @@ struct Keyword
             []() -> ast::CodePtr { return std::make_unique<ast::CodePtr::element_type>(); });
     };
 
+    struct Deploy
+    {
+        static constexpr auto rule = LEXY_LIT("deploy");
+        static constexpr auto value = lexy::callback<ast::DeployPtr>(
+            []() -> ast::DeployPtr { return std::make_unique<ast::DeployPtr::element_type>(); });
+    };
+
     struct Infrastructure
     {
         static constexpr auto rule = LEXY_LIT("infrastructure");
@@ -107,16 +118,17 @@ struct Keyword
             { return std::make_unique<ast::InfrastructurePtr::element_type>(); });
     };
 
-    struct Deploy
+    struct None
     {
-        static constexpr auto rule = LEXY_LIT("deploy");
-        static constexpr auto value = lexy::callback<ast::DeployPtr>(
-            []() -> ast::DeployPtr { return std::make_unique<ast::DeployPtr::element_type>(); });
+        static constexpr auto rule = LEXY_LIT("none");
+        static constexpr auto value = lexy::callback<ast::NonePtr>(
+            []() -> ast::NonePtr { return std::make_unique<ast::NonePtr::element_type>(); });
     };
 
     static constexpr auto rule = dsl::p<System> | dsl::p<System> | dsl::p<Container> |
-                                 dsl::p<Component> | dsl::p<Code> | dsl::p<Infrastructure> |
-                                 dsl::p<Deploy>;
+                                 dsl::p<Component> | dsl::p<Code> | dsl::p<Deploy> |
+                                 dsl::p<Infrastructure> | dsl::p<None>;
+
     static constexpr auto value = lexy::callback<ast::ExpressionPtr>(
         [](auto &&item) { return std::make_unique<ast::Expression>(std::move(item)); });
 };

@@ -155,7 +155,7 @@ struct Selection
 
     struct Source
     {
-        static constexpr auto rule = dsl::p<FunctionCall> | dsl::p<Keyword>;
+        static constexpr auto rule = dsl::p<IdentifierExpr> | dsl::p<Keyword>;
         static constexpr auto value = lexy::forward<ast::ExpressionPtr>;
     };
 

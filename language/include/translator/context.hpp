@@ -1,23 +1,17 @@
 #pragma once
 
-#include <stack>
-#include <string_view>
+#include <cstdint>
+#include <string>
 #include <unordered_set>
 
-namespace cypher
+namespace lang::ast::cypher
 {
 
-struct SymbolTables
+struct TranslatorContext
 {
-    std::unordered_set<std::string> variables;
-    std::unordered_set<std::string> functions;
+    std::unordered_set<std::string> variableTable;
+    std::unordered_set<std::string> functionTable;
+    std::uint32_t quantifierLevel = 0;
 };
 
-using ContextContainer = std::stack<std::unordered_set<std::string_view>>;
-
-struct Context
-{
-    ContextContainer sets;
-};
-
-}; // namespace cypher
+}; // namespace lang::ast::cypher
