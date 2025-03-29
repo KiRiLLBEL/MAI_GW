@@ -6,6 +6,7 @@
 #include <lexy/callback/object.hpp>
 #include <lexy/callback/string.hpp>
 #include <lexy/dsl.hpp>
+#include <lexy/dsl/brackets.hpp>
 #include <parser/literals.hpp>
 
 #include <lexy/dsl/identifier.hpp>
@@ -35,40 +36,6 @@ struct Identifier : lexy::token_production
             LEXY_KEYWORD("deploy", id), LEXY_KEYWORD("infrastructure", id));
     }();
     static constexpr auto value = lexy::as_string<std::string>;
-};
-
-struct Variable : lexy::token_production
-{
-    static constexpr auto rule = dsl::p<Identifier>;
-    static constexpr auto value = lexy::callback<ast::ExpressionPtr>(
-        [](std::string &&varName) -> ast::ExpressionPtr
-        {
-            auto var = std::make_unique<ast::VariableExpr>(std::move(varName));
-            return std::make_unique<ast::Expression>(std::move(var));
-        });
-};
-
-struct FuncArgs : lexy::token_production
-{
-    static constexpr auto rule = dsl::curly_bracketed.opt_list(
-        (dsl::p<Literal> | dsl::p<Variable>) >> dsl::while_(dsl::ascii::space),
-        dsl::sep(dsl::comma >> dsl::while_(dsl::ascii::space)));
-    static constexpr auto value = lexy::as_list<std::vector<ast::ExpressionPtr>>;
-};
-
-struct IdentifierExpr
-{
-    static constexpr auto rule = dsl::p<Identifier> >> dsl::opt(dsl::p<FuncArgs>);
-    static constexpr auto value = lexy::callback<ast::ExpressionPtr>(
-        [](std::string &&name, lexy::nullopt &&) -> ast::ExpressionPtr {
-            return std::make_unique<ast::Expression>(
-                std::make_unique<ast::VariableExpr>(std::move(name)));
-        },
-        [](std::string &&name, auto &&lst) -> ast::ExpressionPtr
-        {
-            return std::make_unique<ast::Expression>(
-                std::make_unique<ast::CallExpr>(std::move(name), std::move(lst)));
-        });
 };
 
 struct Keyword

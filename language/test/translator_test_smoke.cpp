@@ -68,7 +68,7 @@ TEST(TranslatorTestSmoke, AccessSmoke)
 
 TEST(TranslatorTestSmoke, FunctionCallSmoke)
 {
-    const std::string input{R"(route{1, 1})"};
+    const std::string input{R"(route(1, 1))"};
     const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
     const auto result =
         lexy::parse<lang::grammar::ExpressionProduct>(strInput, lexy_ext::report_error);
@@ -152,18 +152,30 @@ TEST(TranslatorTestSmoke, RuleSmoke)
                         p.x == true
                 }
         };
-        all {
-            s1 in system:
-                "DMZ" in s1.props:
-                exist {
-                    p in container:
-                        p.x == true
-                }
-        };
         except exist {
             s1 in system:
                 s1.tech in ["go"]
         }
+    }
+    )"};
+    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
+    const auto result = lexy::parse<lang::grammar::RuleDecl>(strInput, lexy_ext::report_error);
+    EXPECT_TRUE(result.has_value());
+    const auto translation = lang::ast::cypher::Translate(result.value());
+    EXPECT_TRUE(not translation.empty());
+    GTEST_LOG_(INFO) << translation;
+}
+
+TEST(TranslatorTestSmoke, HoldSmoke)
+{
+    const std::string input{R"(rule HOLD {
+    description: "Hello world";
+    priority: Info;
+    lst = ["JS"];
+    all {
+        c in container:
+            cross(c.tech, lst) == none
+    }
     }
     )"};
     const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);

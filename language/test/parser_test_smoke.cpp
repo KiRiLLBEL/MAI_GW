@@ -105,7 +105,7 @@ TEST(ParserTestSmoke, VariableSmoke)
 
 TEST(ParserTestSmoke, FunctionArgsSmoke)
 {
-    const std::string input{R"({525,   "test",   true, [145267]})"};
+    const std::string input{R"((525,   "test",   true, [145267]))"};
     const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
     const auto result = lexy::parse<lang::grammar::FuncArgs>(strInput, lexy_ext::report_error);
     EXPECT_TRUE(result.has_value());
@@ -137,7 +137,7 @@ TEST(ParserTestSmoke, UnaryExprSmoke)
 
 TEST(ParserTestSmoke, FunctionCallSmoke)
 {
-    const std::string input{"route{s1, s2}"};
+    const std::string input{"route(s1, s2)"};
     const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
     const auto result =
         lexy::parse<lang::grammar::ExpressionProduct>(strInput, lexy_ext::report_error);

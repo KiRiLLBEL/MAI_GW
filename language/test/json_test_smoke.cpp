@@ -46,7 +46,7 @@ TEST(TestJsonSmoke, VariableSmoke)
 
 TEST(TestJsonSmoke, FunctionArgsSmoke)
 {
-    const std::string input{"testing_funct{2, hello, [123, true]}"};
+    const std::string input{"testing_funct(2, hello, [123, true])"};
     const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
     const auto result =
         lexy::parse<lang::grammar::ExpressionProduct>(strInput, lexy_ext::report_error);

@@ -111,6 +111,19 @@ constexpr auto QuantifierStartMap(const QuantifierType type)
     }
 }
 
+constexpr auto QuantifierExceptMap(const QuantifierType type)
+{
+    switch (type)
+    {
+    case QuantifierType::ALL:
+        return "NOT ({})"s;
+    case QuantifierType::ANY:
+        return "({})"s;
+    default:
+        throw std::runtime_error{"undefined quantirier type"};
+    }
+}
+
 static constexpr auto variableError = "Variable [{}] not exist in current context"sv;
 static constexpr auto functionError = "Function [{}] not exist"sv;
 } // namespace lang::ast::cypher

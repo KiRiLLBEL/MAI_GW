@@ -46,6 +46,23 @@ private:
     TranslatorContext &ctx_;
 };
 
+class ExceptGuard
+{
+public:
+    explicit ExceptGuard(TranslatorContext &ctx) : ctx_(ctx)
+    {
+        ctx.exceptRule = true;
+    }
+
+    ~ExceptGuard()
+    {
+        ctx_.exceptRule = false;
+    }
+
+private:
+    TranslatorContext &ctx_;
+};
+
 class TranslatorBase
 {
 protected:
@@ -223,6 +240,7 @@ public:
     using TranslatorBase::TranslatorBase;
     TranslationResult operator()(const AssignmentStatement &stmt) const
     {
+        ctx.variableTable.insert(stmt.name);
         return fmt::format(withAssignmentFormat, Translator<ExpressionPtr>{ctx}(stmt.valueExpr),
                            stmt.name);
     }
@@ -253,7 +271,7 @@ auto FormatSelectionArgs(const std::vector<std::string> &args, const ExpressionP
                 }
                 return result;
             }
-            if constexpr (std::is_same_v<T, SystemPtr> || std::is_same_v<T, ContainerPtr> ||
+            else if constexpr (std::is_same_v<T, SystemPtr> || std::is_same_v<T, ContainerPtr> ||
                           std::is_same_v<T, ComponentPtr> || std::is_same_v<T, CodePtr> ||
                           std::is_same_v<T, DeployPtr> || std::is_same_v<T, InfrastructurePtr>)
             {
@@ -261,6 +279,24 @@ auto FormatSelectionArgs(const std::vector<std::string> &args, const ExpressionP
                 for (const auto &arg : args)
                 {
                     result += fmt::format(" ({}:{})", arg, Translator<T>{ctx}(elem));
+                    ctx.variableTable.insert(arg);
+                }
+                result += " WHERE";
+                for (size_t i = 0; i < args.size(); ++i)
+                {
+                    for (size_t j = i + 1; j < args.size(); ++j)
+                    {
+                        result += fmt::format(" {} <> {} AND", args[i], args[j]);
+                    }
+                }
+                return result;
+            }
+            else if constexpr (std::is_same_v<T, VariablePtr>)
+            {
+                std::string result = "MATCH";
+                for (const auto &arg : args)
+                {
+                    result += fmt::format(" ({})-[:CONTAINS]->({})", Translator<T>{ctx}(elem), arg);
                     ctx.variableTable.insert(arg);
                 }
                 result += " WHERE";
@@ -285,8 +321,14 @@ public:
     TranslationResult operator()(const QuantifierStatement<Q> &stmt) const
     {
         QuantifierGuard guard{ctx};
+        if (ctx.quantifierLevel == 1 and ctx.exceptRule)
+        {
+            return fmt::format(fmt::runtime(QuantifierExceptMap(Q)),
+                               Translator<PredicatePtr>{ctx}(stmt.body->predicate));
+        }
         if (ctx.quantifierLevel == 1)
         {
+            ctx.returns = stmt.body->identifiersList;
             return fmt::format(
                 fmt::runtime(QuantifierStartMap(Q)),
                 FormatSelectionArgs(stmt.body->identifiersList, stmt.body->source, ctx),
@@ -358,6 +400,7 @@ public:
     using TranslatorBase::TranslatorBase;
     TranslationResult operator()(const ExceptStatement &stmt) const
     {
+        ExceptGuard guard{ctx};
         return fmt::format("AND NOT ( {} )", Translator<QuantifierPtr>{ctx}(stmt.inner));
     }
 };
@@ -382,7 +425,8 @@ public:
         std::string result = fmt::format(ruleNameFormat, stmt.name);
         result += "\n" + fmt::format(descriptionFormat, stmt.description);
         result += "\n" + fmt::format(priorityFormat, magic_enum::enum_name(stmt.priority)) + "\n";
-        return result + Translator<BlockPtr>{ctx}(stmt.calls);
+        return result + Translator<BlockPtr>{ctx}(stmt.calls) +
+               fmt::format(" RETURN {}", fmt::join(ctx.returns, " ,"));
     }
 };
 
