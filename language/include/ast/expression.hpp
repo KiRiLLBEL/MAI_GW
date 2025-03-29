@@ -94,8 +94,9 @@ using Expression =
 
 using ExpressionPtr = std::unique_ptr<Expression>;
 
-template <KeywordSets> struct KeywordExpr
+template <KeywordSets K> struct KeywordExpr
 {
+    static constexpr KeywordSets kind = K;
 };
 
 template <typename T> struct LiteralExpr

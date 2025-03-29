@@ -241,6 +241,7 @@ public:
     TranslationResult operator()(const AssignmentStatement &stmt) const
     {
         ctx.variableTable.insert(stmt.name);
+        ctx.variableType[stmt.name] = KeywordSets::NONE;
         return fmt::format(withAssignmentFormat, Translator<ExpressionPtr>{ctx}(stmt.valueExpr),
                            stmt.name);
     }
@@ -272,14 +273,15 @@ auto FormatSelectionArgs(const std::vector<std::string> &args, const ExpressionP
                 return result;
             }
             else if constexpr (std::is_same_v<T, SystemPtr> || std::is_same_v<T, ContainerPtr> ||
-                          std::is_same_v<T, ComponentPtr> || std::is_same_v<T, CodePtr> ||
-                          std::is_same_v<T, DeployPtr> || std::is_same_v<T, InfrastructurePtr>)
+                               std::is_same_v<T, ComponentPtr> || std::is_same_v<T, CodePtr> ||
+                               std::is_same_v<T, DeployPtr> || std::is_same_v<T, InfrastructurePtr>)
             {
                 std::string result = "MATCH";
                 for (const auto &arg : args)
                 {
                     result += fmt::format(" ({}:{})", arg, Translator<T>{ctx}(elem));
                     ctx.variableTable.insert(arg);
+                    ctx.variableType[arg] = T::element_type::kind;
                 }
                 result += " WHERE";
                 for (size_t i = 0; i < args.size(); ++i)
@@ -294,10 +296,26 @@ auto FormatSelectionArgs(const std::vector<std::string> &args, const ExpressionP
             else if constexpr (std::is_same_v<T, VariablePtr>)
             {
                 std::string result = "MATCH";
-                for (const auto &arg : args)
+                if (ctx.variableType[elem->name] == KeywordSets::DEPLOY)
                 {
-                    result += fmt::format(" ({})-[:CONTAINS]->({})", Translator<T>{ctx}(elem), arg);
-                    ctx.variableTable.insert(arg);
+                    for (const auto &arg : args)
+                    {
+                        result += fmt::format(" ({})-[:CONTAINS*]->(:ContainerInstance)-[:INSTANCE_"
+                                              "OF]->({}:Container)",
+                                              Translator<T>{ctx}(elem), arg);
+                        ctx.variableTable.insert(arg);
+                        ctx.variableType[arg] = KeywordSets::CONTAINER;
+                    }
+                }
+                else
+                {
+                    for (const auto &arg : args)
+                    {
+                        result +=
+                            fmt::format(" ({})-[:CONTAINS*]->({})", Translator<T>{ctx}(elem), arg);
+                        ctx.variableTable.insert(arg);
+                        ctx.variableType[arg] = SetsMapping(ctx.variableType[elem->name]);
+                    }
                 }
                 result += " WHERE";
                 for (size_t i = 0; i < args.size(); ++i)

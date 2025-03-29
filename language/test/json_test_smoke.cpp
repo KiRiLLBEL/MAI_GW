@@ -122,7 +122,6 @@ TEST(TestJsonSmoke, ConditionalSmoke)
     GTEST_LOG_(INFO) << jsonResult;
 }
 
-// TODO: binary expression fix
 TEST(TestJsonSmoke, RuleSmoke)
 {
     const std::string input{R"(rule first {
