@@ -104,6 +104,7 @@ struct ExpressionProduct : lexy::expression_production
     static constexpr auto opLessEq = dsl::op(LEXY_LIT("<="));
     static constexpr auto opGreaterEq = dsl::op(LEXY_LIT(">="));
     static constexpr auto opIn = dsl::op(LEXY_LIT("in"));
+    static constexpr auto opNotIn = dsl::op(LEXY_LIT("not in"));
     static constexpr auto opAnd = dsl::op(LEXY_LIT("and"));
     static constexpr auto opOr = dsl::op(LEXY_LIT("or"));
     static constexpr auto opXor = dsl::op(LEXY_LIT("xor"));
@@ -138,7 +139,7 @@ struct ExpressionProduct : lexy::expression_production
     struct CompareExpr : dsl::infix_op_left
     {
         static constexpr auto op =
-            opEqual / opNotEqual / opGreater / opLess / opGreaterEq / opLessEq / opIn;
+            opEqual / opNotEqual / opGreater / opLess / opGreaterEq / opLessEq / opIn / opNotIn;
         using operand = AddExpr;
     };
 
@@ -171,6 +172,7 @@ struct ExpressionProduct : lexy::expression_production
         CreateCallbackBinary<ast::GreateEqualPtr, lexy::op<opGreaterEq>>(),
         CreateCallbackBinary<ast::LessEqualPtr, lexy::op<opLessEq>>(),
         CreateCallbackBinary<ast::InPtr, lexy::op<opIn>>(),
+        CreateCallbackBinary<ast::NotInPtr, lexy::op<opNotIn>>(),
         CreateCallbackBinary<ast::AndPtr, lexy::op<opAnd>>(),
         CreateCallbackBinary<ast::XorPtr, lexy::op<opXor>>(),
         CreateCallbackBinary<ast::OrPtr, lexy::op<opOr>>(),

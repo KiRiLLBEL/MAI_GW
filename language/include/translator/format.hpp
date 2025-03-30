@@ -47,6 +47,8 @@ constexpr auto OperatorMap(const ExprType type)
         return "{} >= {}"s;
     case ExprType::IN:
         return "{} IN {}"s;
+    case ExprType::NOT_IN:
+        return "{} NOT IN {}"s;
     case ExprType::AND:
         return "{} AND {}"s;
     case ExprType::OR:

@@ -22,6 +22,7 @@ enum class ExprType
     LESS_EQ,
     GREATER_EQ,
     IN,
+    NOT_IN,
     AND,
     OR,
     XOR,
@@ -83,6 +84,7 @@ using AndPtr = std::unique_ptr<LogicalExpr<ExprType::AND>>;
 using OrPtr = std::unique_ptr<LogicalExpr<ExprType::OR>>;
 using XorPtr = std::unique_ptr<LogicalExpr<ExprType::XOR>>;
 using InPtr = std::unique_ptr<LogicalExpr<ExprType::IN>>;
+using NotInPtr = std::unique_ptr<LogicalExpr<ExprType::NOT_IN>>;
 using TernaryExprPtr = std::unique_ptr<TernaryExpr>;
 
 using Expression =
@@ -90,7 +92,7 @@ using Expression =
                  NonePtr, NumberPtr, StringPtr, BoolPtr, SetPtr, VariablePtr, CallPtr,
                  AccessExprPtr, SafeAccessExprPtr, NegationPtr, MultiplyPtr, DivisionPtr, AddPtr,
                  MinusPtr, EqualPtr, NotEqualPtr, LessPtr, GreaterPtr, GreateEqualPtr, LessEqualPtr,
-                 AndPtr, OrPtr, XorPtr, InPtr, TernaryExprPtr>;
+                 AndPtr, OrPtr, XorPtr, InPtr, NotInPtr, TernaryExprPtr>;
 
 using ExpressionPtr = std::unique_ptr<Expression>;
 

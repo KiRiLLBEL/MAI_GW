@@ -186,17 +186,16 @@ TEST(TranslatorTestSmoke, HoldSmoke)
     GTEST_LOG_(INFO) << translation;
 }
 
-
 // TODO: ADD NOT IN
 TEST(TranslatorTestSmoke, DMZSmoke)
 {
     const std::string input{R"(rule DMZ {
     description: "Hello world";
     priority: Info;
-    all {
+    exist {
         d in deploy:
             "DMZ" == d.name:
-            all { 
+            exist { 
                 c in d: "Database" in c.tags and c == none
             }
         }
