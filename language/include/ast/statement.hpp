@@ -24,7 +24,6 @@ enum class CondType
 
 struct AssignmentStatement;
 template <QuantifierType> struct QuantifierStatement;
-struct SelectionStatement;
 struct IfThen;
 struct IfThenElse;
 struct ExceptStatement;
@@ -38,7 +37,6 @@ using SourcePtr = std::unique_ptr<Source>;
 using AssignmentStatementPtr = std::unique_ptr<AssignmentStatement>;
 using AllQuantifierStatementPtr = std::unique_ptr<QuantifierStatement<QuantifierType::ALL>>;
 using ExistQuantifierStatementPtr = std::unique_ptr<QuantifierStatement<QuantifierType::ANY>>;
-using SelectionStatementPtr = std::unique_ptr<SelectionStatement>;
 using IfThenPtr = std::unique_ptr<IfThen>;
 using IfThenElsePtr = std::unique_ptr<IfThenElse>;
 using ExceptStatementPtr = std::unique_ptr<ExceptStatement>;
@@ -65,11 +63,6 @@ struct AssignmentStatement
 };
 
 template <QuantifierType T> struct QuantifierStatement
-{
-    SelectionStatementPtr body;
-};
-
-struct SelectionStatement
 {
     std::vector<std::string> identifiersList;
     ExpressionPtr source;

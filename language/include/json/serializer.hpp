@@ -207,19 +207,6 @@ public:
     {
         nlohmann::json jOut;
         jOut["type"] = magic_enum::enum_name(T);
-        jOut["expression"] = Serializer<SelectionStatementPtr>{}(stmt.body);
-        return jOut;
-    }
-};
-
-template <> class Serializer<SelectionStatement>
-{
-public:
-    nlohmann::json operator()(const SelectionStatement &stmt) const
-    {
-        static constexpr auto type = "statement";
-        nlohmann::json jOut;
-        jOut["type"] = type;
         jOut["args"] = stmt.identifiersList;
         jOut["source"] = Serializer<ExpressionPtr>{}(stmt.source);
         jOut["predicate"] = Serializer<PredicatePtr>{}(stmt.predicate);

@@ -349,29 +349,18 @@ public:
         if (ctx.quantifierLevel == 1 and ctx.exceptRule)
         {
             return fmt::format(fmt::runtime(QuantifierExceptMap(Q)),
-                               Translator<PredicatePtr>{ctx}(stmt.body->predicate));
+                               Translator<PredicatePtr>{ctx}(stmt.predicate));
         }
         if (ctx.quantifierLevel == 1)
         {
-            ctx.returns = stmt.body->identifiersList;
-            return fmt::format(
-                fmt::runtime(QuantifierStartMap(Q)),
-                FormatSelectionArgs(stmt.body->identifiersList, stmt.body->source, ctx),
-                Translator<PredicatePtr>{ctx}(stmt.body->predicate));
+            ctx.returns = stmt.identifiersList;
+            return fmt::format(fmt::runtime(QuantifierStartMap(Q)),
+                               FormatSelectionArgs(stmt.identifiersList, stmt.source, ctx),
+                               Translator<PredicatePtr>{ctx}(stmt.predicate));
         }
         return fmt::format(fmt::runtime(QuantifierMap(Q)),
-                           FormatSelectionArgs(stmt.body->identifiersList, stmt.body->source, ctx),
-                           Translator<PredicatePtr>{ctx}(stmt.body->predicate));
-    }
-};
-
-template <> class Translator<SelectionStatement> : TranslatorBase
-{
-public:
-    using TranslatorBase::TranslatorBase;
-    TranslationResult operator()(const SelectionStatement & /*unused*/) const
-    {
-        throw std::runtime_error{"BUG"};
+                           FormatSelectionArgs(stmt.identifiersList, stmt.source, ctx),
+                           Translator<PredicatePtr>{ctx}(stmt.predicate));
     }
 };
 

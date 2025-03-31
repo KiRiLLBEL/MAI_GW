@@ -186,7 +186,6 @@ TEST(TranslatorTestSmoke, HoldSmoke)
     GTEST_LOG_(INFO) << translation;
 }
 
-// TODO: ADD NOT IN
 TEST(TranslatorTestSmoke, DMZSmoke)
 {
     const std::string input{R"(rule DMZ {

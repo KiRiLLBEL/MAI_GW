@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <ast/expression.hpp>
 #include <ast/statement.hpp>
 #include <lexy/callback.hpp>
@@ -16,13 +17,6 @@ namespace lang::grammar
 {
 
 namespace dsl = lexy::dsl;
-struct NestedSelection : lexy::transparent_production
-{
-    static constexpr auto whitespace = dsl::ascii::newline | dsl::ascii::space;
-    static constexpr auto rule = dsl::recurse<struct Selection>;
-    static constexpr auto value = lexy::forward<ast::SelectionStatementPtr>;
-};
-
 struct NestedQuantifier : lexy::transparent_production
 {
     static constexpr auto whitespace = dsl::ascii::newline | dsl::ascii::space;
@@ -52,39 +46,10 @@ struct StmtExpression
         [](auto &&item) { return std::make_unique<ast::StatementExpression>(std::move(item)); });
 };
 
-struct Quantifier : lexy::token_production
-{
-    static constexpr auto whitespace = dsl::ascii::newline | dsl::ascii::space;
-
-    struct QuantifierTokenAll
-    {
-        static constexpr auto rule = LEXY_LIT("all") >>
-                                     dsl::curly_bracketed(dsl::p<NestedSelection>);
-        static constexpr auto value = lexy::callback<ast::QuantifierPtr>(
-            [](auto &&block) {
-                return std::make_unique<ast::QuantifierStatement<ast::QuantifierType::ALL>>(
-                    std::move(block));
-            });
-    };
-
-    struct QuantifierTokenExist
-    {
-        static constexpr auto rule = LEXY_LIT("exist") >>
-                                     dsl::curly_bracketed(dsl::p<NestedSelection>);
-        static constexpr auto value = lexy::callback<ast::QuantifierPtr>(
-            [](auto &&block) {
-                return std::make_unique<ast::QuantifierStatement<ast::QuantifierType::ANY>>(
-                    std::move(block));
-            });
-    };
-    static constexpr auto rule = dsl::p<QuantifierTokenAll> | dsl::p<QuantifierTokenExist>;
-    static constexpr auto value = lexy::forward<ast::QuantifierPtr>;
-};
-
 struct FilteredStmt
 {
     static constexpr auto whitespace = dsl::ascii::newline | dsl::ascii::space;
-    static constexpr auto rule = dsl::p<StmtExpression> + LEXY_LIT(":") + dsl::p<Quantifier>;
+    static constexpr auto rule = dsl::p<StmtExpression> + LEXY_LIT(":") + dsl::p<NestedQuantifier>;
     static constexpr auto value = lexy::callback<ast::FilteredStatementPtr>(
         [](auto &&lhs, auto &&rhs)
         { return std::make_unique<ast::FilteredStatement>(std::move(lhs), std::move(rhs)); });
@@ -99,6 +64,56 @@ struct Predicate
         dsl::else_ >> dsl::p<StmtExpression>;
     static constexpr auto value = lexy::callback<ast::PredicatePtr>(
         [](auto &&item) { return std::make_unique<ast::Predicate>(std::move(item)); });
+};
+
+struct Quantifier : lexy::token_production
+{
+    static constexpr auto whitespace = dsl::ascii::newline | dsl::ascii::space;
+
+    struct SelectionList
+    {
+        static constexpr auto rule =
+            dsl::list(dsl::p<Identifier> >> dsl::while_(dsl::ascii::space),
+                      dsl::sep(dsl::comma >> dsl::while_(dsl::ascii::space)));
+
+        static constexpr auto value = lexy::as_list<std::vector<std::string>>;
+    };
+
+    struct Source
+    {
+        static constexpr auto rule = dsl::p<IdentifierExpr> | dsl::p<Keyword>;
+        static constexpr auto value = lexy::forward<ast::ExpressionPtr>;
+    };
+
+    struct QuantifierTokenAll
+    {
+        static constexpr auto rule = LEXY_LIT("all") >>
+                                     dsl::curly_bracketed(dsl::p<SelectionList> + LEXY_LIT("in") +
+                                                          dsl::p<Source> + LEXY_LIT(":") +
+                                                          dsl::p<Predicate>);
+        static constexpr auto value = lexy::callback<ast::QuantifierPtr>(
+            [](auto &&list, auto &&source, auto &&pred)
+            {
+                return std::make_unique<ast::QuantifierStatement<ast::QuantifierType::ALL>>(
+                    std::move(list), std::move(source), std::move(pred));
+            });
+    };
+
+    struct QuantifierTokenExist
+    {
+        static constexpr auto rule = LEXY_LIT("exist") >>
+                                     dsl::curly_bracketed(dsl::p<SelectionList> + LEXY_LIT("in") +
+                                                          dsl::p<Source> + LEXY_LIT(":") +
+                                                          dsl::p<Predicate>);
+        static constexpr auto value = lexy::callback<ast::QuantifierPtr>(
+            [](auto &&list, auto &&source, auto &&pred)
+            {
+                return std::make_unique<ast::QuantifierStatement<ast::QuantifierType::ANY>>(
+                    std::move(list), std::move(source), std::move(pred));
+            });
+    };
+    static constexpr auto rule = dsl::p<QuantifierTokenAll> | dsl::p<QuantifierTokenExist>;
+    static constexpr auto value = lexy::forward<ast::QuantifierPtr>;
 };
 
 struct Conditional : lexy::token_production
@@ -139,35 +154,6 @@ struct BaseStatement : lexy::token_production
         dsl::else_ >> dsl::p<Quantifier>;
     static constexpr auto value = lexy::callback<ast::BaseStatementPtr>(
         [](auto &&inner) { return std::make_unique<ast::BaseStatement>(std::move(inner)); });
-};
-
-struct Selection
-{
-    static constexpr auto whitespace = dsl::ascii::newline | dsl::ascii::space;
-    struct SelectionList
-    {
-        static constexpr auto rule =
-            dsl::list(dsl::p<Identifier> >> dsl::while_(dsl::ascii::space),
-                      dsl::sep(dsl::comma >> dsl::while_(dsl::ascii::space)));
-
-        static constexpr auto value = lexy::as_list<std::vector<std::string>>;
-    };
-
-    struct Source
-    {
-        static constexpr auto rule = dsl::p<IdentifierExpr> | dsl::p<Keyword>;
-        static constexpr auto value = lexy::forward<ast::ExpressionPtr>;
-    };
-
-    static constexpr auto rule =
-        dsl::p<SelectionList> + LEXY_LIT("in") + dsl::p<Source> + LEXY_LIT(":") + dsl::p<Predicate>;
-
-    static constexpr auto value = lexy::callback<ast::SelectionStatementPtr>(
-        [](auto &&list, auto &&source, auto &&pred)
-        {
-            return std::make_unique<ast::SelectionStatement>(std::move(list), std::move(source),
-                                                             std::move(pred));
-        });
 };
 
 struct Assignment
