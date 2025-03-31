@@ -247,97 +247,133 @@ public:
     }
 };
 
-auto FormatSelectionArgs(const std::vector<std::string> &args, const ExpressionPtr &source,
-                         TranslatorContext &ctx) -> std::string
+template <typename T>
+concept BasicSource = std::is_same_v<T, SystemPtr> || std::is_same_v<T, ContainerPtr> ||
+                      std::is_same_v<T, ComponentPtr> || std::is_same_v<T, CodePtr> ||
+                      std::is_same_v<T, DeployPtr> || std::is_same_v<T, InfrastructurePtr>;
+
+template <typename T> struct SourceHandler
 {
-    return std::visit(
-        [&ctx, &args](auto &&elem) -> std::string
+    TranslationResult operator()(const std::vector<std::string> & /*unused*/, const T & /*unused*/,
+                                 TranslatorContext & /*unused*/) const
+    {
+        throw std::runtime_error{"BUG"};
+    };
+};
+
+template <typename... Ts> struct SourceHandler<std::variant<Ts...>>
+{
+    TranslationResult operator()(const std::vector<std::string> &args,
+                                 const std::variant<Ts...> &var, TranslatorContext &ctx) const
+    {
+        return std::visit(
+            [&](auto &subValue) -> TranslationResult
+            { return SourceHandler<std::decay_t<decltype(subValue)>>{}(args, subValue, ctx); },
+            var);
+    }
+};
+
+template <> struct SourceHandler<ExpressionPtr>
+{
+    TranslationResult operator()(const std::vector<std::string> &args, const ExpressionPtr &elem,
+                                 TranslatorContext &ctx)
+    {
+        return SourceHandler<Expression>{}(args, *elem, ctx);
+    }
+};
+
+template <> struct SourceHandler<CallPtr>
+{
+    TranslationResult operator()(const std::vector<std::string> &args, const CallPtr &elem,
+                                 TranslatorContext &ctx)
+    {
+        std::string result = fmt::format("MATCH p = {}", Translator<CallPtr>{ctx}(elem));
+        for (const auto &arg : args)
         {
-            using T = std::decay_t<decltype(elem)>;
-            if constexpr (std::is_same_v<T, CallPtr>)
+            result += fmt::format(" UNWIND nodes(p) AS {}", arg);
+            result += fmt::format(" WITH {}", arg);
+            ctx.variableTable.insert(arg);
+        }
+        result += " WHERE";
+        for (size_t i = 0; i < args.size(); ++i)
+        {
+            for (size_t j = i + 1; j < args.size(); ++j)
             {
-                std::string result = fmt::format("MATCH p = {}", Translator<CallPtr>{ctx}(elem));
-                for (const auto &arg : args)
-                {
-                    result += fmt::format(" UNWIND nodes(p) AS {}", arg);
-                    result += fmt::format(" WITH {}", arg);
-                    ctx.variableTable.insert(arg);
-                }
-                result += " WHERE";
-                for (size_t i = 0; i < args.size(); ++i)
-                {
-                    for (size_t j = i + 1; j < args.size(); ++j)
-                    {
-                        result += fmt::format(" {} <> {} AND", args[i], args[j]);
-                    }
-                }
-                return result;
+                result += fmt::format(" {} <> {} AND", args[i], args[j]);
             }
-            else if constexpr (std::is_same_v<T, SystemPtr> || std::is_same_v<T, ContainerPtr> ||
-                               std::is_same_v<T, ComponentPtr> || std::is_same_v<T, CodePtr> ||
-                               std::is_same_v<T, DeployPtr> || std::is_same_v<T, InfrastructurePtr>)
+        }
+        return result;
+    }
+};
+
+template <BasicSource T> struct SourceHandler<T>
+{
+    TranslationResult operator()(const std::vector<std::string> &args, const T &elem,
+                                 TranslatorContext &ctx)
+    {
+        std::string result = "MATCH";
+        bool first = true;
+        for (const auto &arg : args)
+        {
+            if (!first)
             {
-                std::string result = "MATCH";
-                bool first = true;
-                for (const auto &arg : args)
-                {
-                    if (!first)
-                    {
-                        result += ", ";
-                    }
-                    first = false;
-                    result += fmt::format(" ({}:{})", arg, Translator<T>{ctx}(elem));
-                    ctx.variableTable.insert(arg);
-                    ctx.variableType[arg] = T::element_type::kind;
-                }
-                result += " WHERE";
-                for (size_t i = 0; i < args.size(); ++i)
-                {
-                    for (size_t j = i + 1; j < args.size(); ++j)
-                    {
-                        result += fmt::format(" {} <> {} AND", args[i], args[j]);
-                    }
-                }
-                return result;
+                result += ", ";
             }
-            else if constexpr (std::is_same_v<T, VariablePtr>)
+            first = false;
+            result += fmt::format(" ({}:{})", arg, Translator<T>{ctx}(elem));
+            ctx.variableTable.insert(arg);
+            ctx.variableType[arg] = T::element_type::kind;
+        }
+        result += " WHERE";
+        for (size_t i = 0; i < args.size(); ++i)
+        {
+            for (size_t j = i + 1; j < args.size(); ++j)
             {
-                std::string result = "MATCH";
-                if (ctx.variableType[elem->name] == KeywordSets::DEPLOY)
-                {
-                    for (const auto &arg : args)
-                    {
-                        result += fmt::format(" ({})-[:CONTAINS*]->(:ContainerInstance)-[:INSTANCE_"
-                                              "OF]->({}:Container)",
-                                              Translator<T>{ctx}(elem), arg);
-                        ctx.variableTable.insert(arg);
-                        ctx.variableType[arg] = KeywordSets::CONTAINER;
-                    }
-                }
-                else
-                {
-                    for (const auto &arg : args)
-                    {
-                        result +=
-                            fmt::format(" ({})-[:CONTAINS*]->({})", Translator<T>{ctx}(elem), arg);
-                        ctx.variableTable.insert(arg);
-                        ctx.variableType[arg] = SetsMapping(ctx.variableType[elem->name]);
-                    }
-                }
-                result += " WHERE";
-                for (size_t i = 0; i < args.size(); ++i)
-                {
-                    for (size_t j = i + 1; j < args.size(); ++j)
-                    {
-                        result += fmt::format(" {} <> {} AND", args[i], args[j]);
-                    }
-                }
-                return result;
+                result += fmt::format(" {} <> {} AND", args[i], args[j]);
             }
-            throw std::runtime_error{"unsupported type of source"};
-        },
-        *source);
-}
+        }
+        return result;
+    }
+};
+
+template <> struct SourceHandler<VariablePtr>
+{
+    TranslationResult operator()(const std::vector<std::string> &args, const VariablePtr &elem,
+                                 TranslatorContext &ctx)
+    {
+        std::string result = "MATCH";
+        if (ctx.variableType[elem->name] == KeywordSets::DEPLOY)
+        {
+            for (const auto &arg : args)
+            {
+                result += fmt::format(
+                    " ({})-[:CONTAINS*]->(:ContainerInstance)-[:INSTANCE_OF]->({}:Container)",
+                    Translator<VariablePtr>{ctx}(elem), arg);
+                ctx.variableTable.insert(arg);
+                ctx.variableType[arg] = KeywordSets::CONTAINER;
+            }
+        }
+        else
+        {
+            for (const auto &arg : args)
+            {
+                result += fmt::format(" ({})-[:CONTAINS*]->({})",
+                                      Translator<VariablePtr>{ctx}(elem), arg);
+                ctx.variableTable.insert(arg);
+                ctx.variableType[arg] = SetsMapping(ctx.variableType[elem->name]);
+            }
+        }
+        result += " WHERE";
+        for (size_t i = 0; i < args.size(); ++i)
+        {
+            for (size_t j = i + 1; j < args.size(); ++j)
+            {
+                result += fmt::format(" {} <> {} AND", args[i], args[j]);
+            }
+        }
+        return result;
+    }
+};
 
 template <QuantifierType Q> class Translator<QuantifierStatement<Q>> : TranslatorBase
 {
@@ -346,6 +382,7 @@ public:
     TranslationResult operator()(const QuantifierStatement<Q> &stmt) const
     {
         QuantifierGuard guard{ctx};
+        using T = std::decay_t<decltype(stmt.source)>;
         if (ctx.quantifierLevel == 1 and ctx.exceptRule)
         {
             return fmt::format(fmt::runtime(QuantifierExceptMap(Q)),
@@ -355,11 +392,11 @@ public:
         {
             ctx.returns = stmt.identifiersList;
             return fmt::format(fmt::runtime(QuantifierStartMap(Q)),
-                               FormatSelectionArgs(stmt.identifiersList, stmt.source, ctx),
+                               SourceHandler<T>{}(stmt.identifiersList, stmt.source, ctx),
                                Translator<PredicatePtr>{ctx}(stmt.predicate));
         }
         return fmt::format(fmt::runtime(QuantifierMap(Q)),
-                           FormatSelectionArgs(stmt.identifiersList, stmt.source, ctx),
+                           SourceHandler<T>{}(stmt.identifiersList, stmt.source, ctx),
                            Translator<PredicatePtr>{ctx}(stmt.predicate));
     }
 };
