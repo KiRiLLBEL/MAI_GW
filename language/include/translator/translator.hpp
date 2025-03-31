@@ -260,6 +260,7 @@ auto FormatSelectionArgs(const std::vector<std::string> &args, const ExpressionP
                 for (const auto &arg : args)
                 {
                     result += fmt::format(" UNWIND nodes(p) AS {}", arg);
+                    result += fmt::format(" WITH {}", arg);
                     ctx.variableTable.insert(arg);
                 }
                 result += " WHERE";
@@ -277,8 +278,14 @@ auto FormatSelectionArgs(const std::vector<std::string> &args, const ExpressionP
                                std::is_same_v<T, DeployPtr> || std::is_same_v<T, InfrastructurePtr>)
             {
                 std::string result = "MATCH";
+                bool first = true;
                 for (const auto &arg : args)
                 {
+                    if (!first)
+                    {
+                        result += ", ";
+                    }
+                    first = false;
                     result += fmt::format(" ({}:{})", arg, Translator<T>{ctx}(elem));
                     ctx.variableTable.insert(arg);
                     ctx.variableType[arg] = T::element_type::kind;

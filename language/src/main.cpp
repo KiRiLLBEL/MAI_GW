@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 {
     if (argc < maxArgsCount)
     {
-        std::cerr << "Использование: " << argv[0]
+        std::cerr << "Usage: " << argv[0]
                   << " -f <input_file> -o <output_file> -t <json|cypher>" << std::endl;
         return 1;
     }

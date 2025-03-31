@@ -48,7 +48,7 @@ constexpr auto OperatorMap(const ExprType type)
     case ExprType::IN:
         return "{} IN {}"s;
     case ExprType::NOT_IN:
-        return "{} NOT IN {}"s;
+        return "NOT {} IN {}"s;
     case ExprType::AND:
         return "{} AND {}"s;
     case ExprType::OR:
@@ -118,9 +118,9 @@ constexpr auto QuantifierExceptMap(const QuantifierType type)
     switch (type)
     {
     case QuantifierType::ALL:
-        return "NOT ({})"s;
-    case QuantifierType::ANY:
         return "({})"s;
+    case QuantifierType::ANY:
+        return "NOT ({})"s;
     default:
         throw std::runtime_error{"undefined quantirier type"};
     }

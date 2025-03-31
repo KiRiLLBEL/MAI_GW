@@ -1,0 +1,11 @@
+rule DMZ {
+    description: "DMZ";
+    priority: Info;
+    all {
+        d in deploy:
+            "DMZ" == d.name:
+            all { 
+                c in d: "Database" not in c.tags
+            }
+    }
+}

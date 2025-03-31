@@ -1,13 +1,31 @@
-from neo4j import GraphDatabase
+import os
+import argparse
 import json
+from neo4j import GraphDatabase
 
-NEO4J_URI = "bolt://localhost:7687"
-NEO4J_USER = "USERNAME"
-NEO4J_PASSWORD = "PASSWORD"
-
-STRUCTURIZR_JSON_PATH = "workspace.json"
-
-driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
+def parse_args():
+    parser = argparse.ArgumentParser(description="Импорт модели Structurizr в Neo4j")
+    parser.add_argument(
+        "-f", "--file", 
+        required=True, 
+        help="Путь к JSON файлу модели (например, workspace.json)"
+    )
+    parser.add_argument(
+        "--neo4j_uri",
+        default=os.getenv("NEO4J_URI", "bolt://localhost:7687"),
+        help="URI подключения к Neo4j (по умолчанию берётся из переменной окружения NEO4J_URI или используется 'bolt://localhost:7687')"
+    )
+    parser.add_argument(
+        "--neo4j_user",
+        default=os.getenv("NEO4J_USER", "USERNAME"),
+        help="Имя пользователя для подключения к Neo4j (по умолчанию берётся из переменной окружения NEO4J_USER или используется 'USERNAME')"
+    )
+    parser.add_argument(
+        "--neo4j_password",
+        default=os.getenv("NEO4J_PASSWORD", "PASSWORD"),
+        help="Пароль для подключения к Neo4j (по умолчанию берётся из переменной окружения NEO4J_PASSWORD или используется 'PASSWORD')"
+    )
+    return parser.parse_args()
 
 def parse_tags(tag_string):
     """
@@ -36,7 +54,6 @@ def extract_elements_and_relationships(model):
     elements = []
     relationships = []
 
-    # 1) Persons
     for person in model['model'].get('people', []):
         elements.append({
             'id': person['id'],
@@ -66,7 +83,6 @@ def extract_elements_and_relationships(model):
                 'parentId': system['id'],
                 'properties': container.get('properties', {}),
                 'tags': parse_tags(container.get('tags', '')),
-                # Разбиваем technology на список (если несколько через запятую)
                 'technology': parse_technologies(container.get('technology', ''))
             })
             relationships.extend(container.get('relationships', []))
@@ -129,7 +145,6 @@ def process_deployment_node(node, elements, relationships, parent_id=None):
     for container_instance in node.get('containerInstances', []):
         ci_id = container_instance['id']
         container_id = container_instance.get('containerId')
-        # Берём количество инстансов, по умолчанию 1
         instance_count = container_instance.get('instances', 1)
 
         elements.append({
@@ -289,15 +304,22 @@ def import_relationships(tx, relationships):
         tx.run(query, **params)
 
 def main():
-    model = load_structurizr_model(STRUCTURIZR_JSON_PATH)
+    args = parse_args()
+
+    driver = GraphDatabase.driver(
+        args.neo4j_uri, 
+        auth=(args.neo4j_user, args.neo4j_password)
+    )
+
+    model = load_structurizr_model(args.file)
     elements, relationships = extract_elements_and_relationships(model)
 
     with driver.session() as session:
         session.execute_write(import_elements, elements)
         session.execute_write(import_relationships, relationships)
 
+    driver.close()
     print("Success")
 
 if __name__ == "__main__":
     main()
-    driver.close()
