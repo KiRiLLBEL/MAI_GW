@@ -5,8 +5,11 @@
 #include "statements.hpp"
 #include <ast/ast.hpp>
 
+#include <lexy/action/parse.hpp>
 #include <lexy/callback.hpp>
 #include <lexy/dsl.hpp>
+#include <lexy/input/string_input.hpp>
+#include <lexy_ext/report_error.hpp>
 
 namespace lang::grammar
 {
@@ -68,21 +71,15 @@ struct RuleDecl
         { return ast::Rule(std::move(name), std::move(desc), prio, std::move(block)); });
 };
 
-// struct program
-// {
-//     static constexpr auto rule = dsl::list(dsl::p<rule_decl>);
-//     static constexpr auto value = lexy::as_list<std::vector<ast::Rule>>;
-// };
-
-// inline std::optional<std::vector<ast::Rule>> parse_dsl(const std::string& input)
-// {
-//     auto str_input = lexy::string_input<lexy::utf8_encoding>(input);
-//     auto result = lexy::parse<program>(str_input, lexy_ext::report_error);
-
-//     if (result.has_value())
-//         return result.value();
-//     else
-//         return std::nullopt;
-// }
+auto Parse(const std::string& input)
+{
+    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
+    auto result = lexy::parse<lang::grammar::RuleDecl>(strInput, lexy_ext::report_error);
+    if(not result.has_value())
+    {
+        throw std::runtime_error{"Failed parsing program"};
+    }
+    return result;
+}
 
 } // namespace lang::grammar

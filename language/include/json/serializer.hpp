@@ -330,10 +330,10 @@ public:
     }
 };
 
-template <typename U> nlohmann::json Serialize(U &&value)
+template <typename U> std::string Serialize(U &&value)
 {
     using CleanType = std::decay_t<U>;
-    return Serializer<CleanType>{}(std::forward<U>(value));
+    return nlohmann::to_string(Serializer<CleanType>{}(std::forward<U>(value)));
 }
 
 } // namespace lang::ast::json

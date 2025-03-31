@@ -61,16 +61,4 @@ target_link_libraries(
     lang
 )
 
-add_executable(json-converter)
-target_sources(
-    json-converter PRIVATE
-    ${PROJECT_SOURCE_DIR}/src/json.cpp
-)
-
-
-target_link_libraries(
-    json-converter PRIVATE 
-    lang
-)
-
 add_subdirectory(test)
