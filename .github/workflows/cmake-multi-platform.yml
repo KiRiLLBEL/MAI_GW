@@ -43,7 +43,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y ninja-build clang gcc g++ cmake
+          sudo apt-get install -y ninja-build clang cmake
         shell: bash
 
       - name: Install dependencies (macOS)
@@ -57,6 +57,7 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           choco install ninja -y
+          choco install llvm -y
         shell: pwsh
 
       - name: Configure
