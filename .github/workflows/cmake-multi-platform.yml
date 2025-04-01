@@ -34,6 +34,12 @@ jobs:
           sudo apt-get install -y ninja-build clang cmake
         shell: bash
 
+      - name: Set version
+        id: set_version
+        run: |
+          # Формируем версию на основе номера сборки, например: v42
+          echo "VERSION=v${{ github.run_number }}" >> $GITHUB_OUTPUT
+
       - name: Configure
         working-directory: language
         run: cmake --preset ${{ matrix.preset }}
@@ -50,5 +56,5 @@ jobs:
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MyApp-${{ steps.set_version.outputs.VERSION }}-${{ matrix.preset }}
+          name: Arch-${{ steps.set_version.outputs.VERSION }}-${{ matrix.preset }}
           path: language/build
