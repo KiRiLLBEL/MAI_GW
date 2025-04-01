@@ -56,7 +56,7 @@ jobs:
       - name: Install dependencies (Windows)
         if: runner.os == 'Windows'
         run: |
-          choco install ninja --version=1.11.1 -y
+          choco install ninja -y
         shell: pwsh
 
       - name: Configure
