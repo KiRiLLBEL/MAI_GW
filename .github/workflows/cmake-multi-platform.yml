@@ -12,32 +12,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest]
         preset: [debug, sanitazers, release]
 
         include:
-          - os: windows-latest
-            preset: debug
-          - os: windows-latest
-            preset: release
-
           - os: ubuntu-latest
             preset: debug
           - os: ubuntu-latest
             preset: sanitazers
           - os: ubuntu-latest
             preset: release
-
-          - os: macos-latest
-            preset: debug
-          - os: macos-latest
-            preset: sanitazers
-          - os: macos-latest
-            preset: release
-
-        exclude:
-          - os: windows-latest
-            preset: sanitazers
 
     steps:
       - name: Check out repository
@@ -49,20 +33,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ninja-build clang cmake
         shell: bash
-
-      - name: Install dependencies (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          brew update
-          brew install ninja cmake llvm
-        shell: bash
-
-      - name: Install dependencies (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          choco install ninja -y
-          choco install llvm -y
-        shell: pwsh
 
       - name: Configure
         working-directory: language
