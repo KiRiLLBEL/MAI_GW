@@ -92,9 +92,9 @@ constexpr auto QuantifierMap(const QuantifierType type)
     switch (type)
     {
     case QuantifierType::ALL:
-        return "NOT EXISTS {{ {} NOT ({}) }}"s;
+        return "NOT EXISTS {{ {} {} NOT ({}) }}"s;
     case QuantifierType::ANY:
-        return "EXISTS {{ {} ({}) }}"s;
+        return "EXISTS {{ {} {} ({}) }}"s;
     default:
         throw std::runtime_error{"undefined quantirier type"};
     }
@@ -105,9 +105,9 @@ constexpr auto QuantifierStartMap(const QuantifierType type)
     switch (type)
     {
     case QuantifierType::ALL:
-        return "{} NOT ({})"s;
+        return "{} {} NOT ({})"s;
     case QuantifierType::ANY:
-        return "{} ({})"s;
+        return "{} {} ({})"s;
     default:
         throw std::runtime_error{"undefined quantirier type"};
     }
@@ -118,9 +118,9 @@ constexpr auto QuantifierExceptMap(const QuantifierType type)
     switch (type)
     {
     case QuantifierType::ALL:
-        return "({})"s;
+        return "{} ({})"s;
     case QuantifierType::ANY:
-        return "NOT ({})"s;
+        return "{} NOT ({})"s;
     default:
         throw std::runtime_error{"undefined quantirier type"};
     }

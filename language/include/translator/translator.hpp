@@ -375,6 +375,9 @@ template <> struct SourceHandler<VariablePtr>
     }
 };
 
+template <typename P>
+concept FilteredPredicate = std::is_same_v<std::decay_t<P>, FilteredStatementPtr>;
+
 template <QuantifierType Q> class Translator<QuantifierStatement<Q>> : TranslatorBase
 {
 public:
@@ -382,22 +385,53 @@ public:
     TranslationResult operator()(const QuantifierStatement<Q> &stmt) const
     {
         QuantifierGuard guard{ctx};
-        using T = std::decay_t<decltype(stmt.source)>;
-        if (ctx.quantifierLevel == 1 and ctx.exceptRule)
-        {
-            return fmt::format(fmt::runtime(QuantifierExceptMap(Q)),
-                               Translator<PredicatePtr>{ctx}(stmt.predicate));
-        }
-        if (ctx.quantifierLevel == 1)
-        {
-            ctx.returns = stmt.identifiersList;
-            return fmt::format(fmt::runtime(QuantifierStartMap(Q)),
-                               SourceHandler<T>{}(stmt.identifiersList, stmt.source, ctx),
-                               Translator<PredicatePtr>{ctx}(stmt.predicate));
-        }
-        return fmt::format(fmt::runtime(QuantifierMap(Q)),
-                           SourceHandler<T>{}(stmt.identifiersList, stmt.source, ctx),
-                           Translator<PredicatePtr>{ctx}(stmt.predicate));
+
+        return std::visit(
+            [&](auto &&pred) -> TranslationResult
+            {
+                using PredT = std::decay_t<decltype(pred)>;
+                using T = std::decay_t<decltype(stmt.source)>;
+                if constexpr (FilteredPredicate<PredT>)
+                {
+                    if (ctx.quantifierLevel == 1 and ctx.exceptRule)
+                    {
+                        return fmt::format(fmt::runtime(QuantifierExceptMap(Q)),
+                                           Translator<StatementExpressionPtr>{ctx}(pred->expr) +
+                                               " AND ",
+                                           Translator<QuantifierPtr>{ctx}(pred->quant));
+                    }
+                    if (ctx.quantifierLevel == 1)
+                    {
+                        ctx.returns = stmt.identifiersList;
+                        return fmt::format(
+                            fmt::runtime(QuantifierStartMap(Q)),
+                            SourceHandler<T>{}(stmt.identifiersList, stmt.source, ctx),
+                            Translator<StatementExpressionPtr>{ctx}(pred->expr) + " AND ",
+                            Translator<QuantifierPtr>{ctx}(pred->quant));
+                    }
+                    return fmt::format(fmt::runtime(QuantifierMap(Q)),
+                                       SourceHandler<T>{}(stmt.identifiersList, stmt.source, ctx),
+                                       Translator<StatementExpressionPtr>{ctx}(pred->expr) +
+                                           " AND ",
+                                       Translator<QuantifierPtr>{ctx}(pred->quant));
+                }
+                if (ctx.quantifierLevel == 1 and ctx.exceptRule)
+                {
+                    return fmt::format(fmt::runtime(QuantifierExceptMap(Q)), "",
+                                       Translator<PredicatePtr>{ctx}(stmt.predicate));
+                }
+                if (ctx.quantifierLevel == 1)
+                {
+                    ctx.returns = stmt.identifiersList;
+                    return fmt::format(fmt::runtime(QuantifierStartMap(Q)),
+                                       SourceHandler<T>{}(stmt.identifiersList, stmt.source, ctx),
+                                       "", Translator<PredicatePtr>{ctx}(stmt.predicate));
+                }
+                return fmt::format(fmt::runtime(QuantifierMap(Q)),
+                                   SourceHandler<T>{}(stmt.identifiersList, stmt.source, ctx), "",
+                                   Translator<PredicatePtr>{ctx}(stmt.predicate));
+            },
+            *stmt.predicate);
     }
 };
 
