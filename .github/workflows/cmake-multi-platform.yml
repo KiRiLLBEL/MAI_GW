@@ -46,3 +46,9 @@ jobs:
         working-directory: language
         if: matrix.preset != 'release'
         run: ctest --preset ${{ matrix.preset }} --output-on-failure
+      
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: MyApp-${{ steps.set_version.outputs.VERSION }}-${{ matrix.preset }}
+          path: language/build
