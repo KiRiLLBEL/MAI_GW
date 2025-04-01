@@ -35,6 +35,10 @@ jobs:
           - os: macos-latest
             preset: release
 
+        exclude:
+          - os: windows-latest
+            preset: sanitazers
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -50,7 +54,7 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           brew update
-          brew install ninja cmake
+          brew install ninja cmake llvm
         shell: bash
 
       - name: Install dependencies (Windows)
