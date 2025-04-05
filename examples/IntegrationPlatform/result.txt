@@ -1,0 +1,2 @@
+s1, s2
+(:SoftwareSystem {`structurizr.dsl.identifier`: "systemc", name: "Система C", id: "10", articulationPoint: 1, tags: ["Element", "Software System"]}), (:SoftwareSystem {`structurizr.dsl.identifier`: "systema", name: "Система A", id: "2", articulationPoint: 1, tags: ["Element", "Software System"]})

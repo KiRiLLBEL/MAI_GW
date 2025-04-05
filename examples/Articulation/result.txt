@@ -1,0 +1,2 @@
+c
+(:Container {`structurizr.dsl.identifier`: "s2.be", name: "API Gateway", technology: ["Java Spring Cloud Gateway"], id: "11", articulationPoint: 1, tags: ["Element", "Container"]})

@@ -1,0 +1,2 @@
+d
+(:DeploymentNode {`structurizr.dsl.identifier`: "d03ba6b0-47eb-4977-939a-27e9b5583a39", name: "DMZ", environment: "Production", id: "11", articulationPoint: 0, tags: ["Element", "Deployment Node"]})

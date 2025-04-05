@@ -1,0 +1,2 @@
+c
+(:Container {`structurizr.dsl.identifier`: "serviceb", name: "Сервис B", technology: ["Python", "Flask"], id: "4", articulationPoint: 0, tags: ["Element", "Container"]})
