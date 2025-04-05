@@ -55,5 +55,5 @@ jobs:
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Arch-${{ steps.set_version.outputs.VERSION }}-${{ matrix.preset }}
+          name: Arch-latest-${{ matrix.preset }}
           path: language/build

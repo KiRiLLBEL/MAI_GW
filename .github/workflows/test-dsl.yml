@@ -17,7 +17,7 @@ jobs:
       - name: Download built artifacts
         uses: actions/download-artifact@v4
         with:
-          name: Arch-v${{ github.event.workflow_run.run_number }}-debug
+          name: Arch-latest-debug
           path: artifacts
 
       - name: Show downloaded files
