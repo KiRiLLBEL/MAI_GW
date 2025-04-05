@@ -31,7 +31,7 @@ workspace {
         s2 -> integrationPlatform "Интеграция через REST API"
 
         deploymentEnvironment "Production" {
-            deploymentNode "DMZ" {
+            dmz = deploymentNode "DMZ" {
                 deploymentNode "Database deploy" {
                     containerInstance db
                     instances 2
