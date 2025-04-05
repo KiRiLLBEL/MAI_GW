@@ -13,7 +13,7 @@ for testdir in examples/*; do
 
     docker run --rm \
       -v "${GITHUB_WORKSPACE}:/usr/local/structurizr" \
-      structurizr/cli \
+      structurizr/cli export \
       -workspace "$testdir/workspace.dsl" \
       -format json \
       -output "$testdir/output.json"
