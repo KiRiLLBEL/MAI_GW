@@ -102,7 +102,7 @@ jobs:
         run: sleep 20
 
       - name: Run All Tests
-        run: ./scripts/test_runner.sh
+        run: ./scripts/test-runner.sh
 
       - name: Stop Neo4j container
         if: always()
