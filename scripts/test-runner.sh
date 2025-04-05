@@ -16,9 +16,9 @@ for testdir in examples/*; do
       structurizr/cli export \
       -workspace "$testdir/workspace.dsl" \
       -format json \
-      -output "$testdir/output.json"
+      -output "$testdir/"
 
-    python converter/converter.py -f "$testdir/output.json"
+    python converter/converter.py -f "$testdir/workspace.json"
 
     ./artifacts/dsl-parser \
       -f "$testdir/input.arch" \
