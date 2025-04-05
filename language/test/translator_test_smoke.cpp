@@ -207,3 +207,21 @@ TEST(TranslatorTestSmoke, DMZSmoke)
     EXPECT_TRUE(not translation.empty());
     GTEST_LOG_(INFO) << translation;
 }
+
+TEST(TranslatorTestSmoke, ArticulationSmoke)
+{
+    const std::string input{R"(rule Articulation {
+        description: "Hello world";
+        priority: Info;
+        all {
+            c in container: articulation(c)
+        }
+    }
+    )"};
+    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
+    const auto result = lexy::parse<lang::grammar::RuleDecl>(strInput, lexy_ext::report_error);
+    EXPECT_TRUE(result.has_value());
+    const auto translation = lang::ast::cypher::Translate(result.value());
+    EXPECT_TRUE(not translation.empty());
+    GTEST_LOG_(INFO) << translation;
+}

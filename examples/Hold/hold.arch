@@ -1,0 +1,10 @@
+rule HOLD
+{
+    description: "Hello world";
+    priority: Info;
+    lst = ["Flask"];
+    all {
+        c in container:
+            cross(c.technology, lst) == none
+    }
+}

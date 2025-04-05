@@ -303,6 +303,40 @@ def import_relationships(tx, relationships):
 
         tx.run(query, **params)
 
+def create_graph_projection(tx):
+    """
+    Создаёт проекцию графа для использования в GDS и запускает алгоритм поиска точек сочленения.
+    Если проекция с заданным именем уже существует, она будет удалена.
+    """
+    # Удаляем существующую проекцию, если она есть
+    tx.run("CALL gds.graph.drop('Graph', false) YIELD graphName")
+    
+    projection_query = """
+    CALL gds.graph.project(
+      'Graph',
+      ['Person', 'SoftwareSystem', 'Container', 'Component', 'DeploymentNode', 'ContainerInstance', 'InfrastructureNode'],
+      {
+        RELATES_TO: {
+          type: 'RELATES_TO',
+          orientation: 'UNDIRECTED'
+        },
+        CONTAINS: {
+          type: 'CONTAINS',
+          orientation: 'UNDIRECTED'
+        },
+        INSTANCE_OF: {
+          type: 'INSTANCE_OF',
+          orientation: 'UNDIRECTED'
+        }
+      }
+    ) YIELD graphName, nodeCount, relationshipCount
+    WITH graphName
+    CALL gds.articulationPoints.write(graphName, { writeProperty: 'articulationPoint'})
+    YIELD articulationPointCount
+    RETURN articulationPointCount
+    """
+    tx.run(projection_query)
+    
 def main():
     args = parse_args()
 
@@ -317,6 +351,7 @@ def main():
     with driver.session() as session:
         session.execute_write(import_elements, elements)
         session.execute_write(import_relationships, relationships)
+        session.execute_write(create_graph_projection)
 
     driver.close()
     print("Success")

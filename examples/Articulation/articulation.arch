@@ -1,0 +1,7 @@
+rule Articulation {
+    description: "Hello world";
+    priority: Info;
+    all {
+        c in container: articulation(c)
+    }
+}

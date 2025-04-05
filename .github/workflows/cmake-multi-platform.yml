@@ -37,7 +37,6 @@ jobs:
       - name: Set version
         id: set_version
         run: |
-          # Формируем версию на основе номера сборки, например: v42
           echo "VERSION=v${{ github.run_number }}" >> $GITHUB_OUTPUT
 
       - name: Configure
