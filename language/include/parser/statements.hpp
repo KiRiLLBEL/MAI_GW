@@ -9,7 +9,6 @@
 #include <lexy/dsl.hpp>
 #include <lexy/dsl/branch.hpp>
 #include <lexy/grammar.hpp>
-#include <memory>
 #include <parser/expressions.hpp>
 #include <parser/identifiers.hpp>
 

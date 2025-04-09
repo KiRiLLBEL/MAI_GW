@@ -1,6 +1,7 @@
 #pragma once
 #include "ast/expression.hpp"
 #include "ast/statement.hpp"
+#include "nlohmann/json_fwd.hpp"
 #include <algorithm>
 #include <ast/ast.hpp>
 #include <magic_enum/magic_enum.hpp>
@@ -15,6 +16,16 @@
 
 namespace lang::ast::json
 {
+
+inline nlohmann::json MakeNode(const NodeLocation &node)
+{
+    nlohmann::json jNode;
+    jNode["line"] = node.line;
+    jNode["column"] = node.column;
+    jNode["length"] = node.length;
+    return jNode;
+}
+
 template <typename T> class Serializer
 {
 public:
@@ -52,12 +63,13 @@ public:
 template <KeywordSets K> class Serializer<KeywordExpr<K>>
 {
 public:
-    nlohmann::json operator()(const KeywordExpr<K> & /*unused*/) const
+    nlohmann::json operator()(const KeywordExpr<K> &keyword) const
     {
         static constexpr auto type = "keyword";
         nlohmann::json jOut;
         jOut["type"] = type;
         jOut[type] = magic_enum::enum_name(K);
+        jOut["node"] = MakeNode(keyword.location);
         return jOut;
     }
 };
@@ -102,6 +114,7 @@ public:
         nlohmann::json jOut;
         jOut["type"] = type;
         jOut[type] = var.name;
+        jOut["node"] = MakeNode(var.location);
         return jOut;
     }
 };
@@ -146,6 +159,7 @@ public:
         {
             jOut["args"].push_back(item);
         }
+        jOut["node"] = MakeNode(expr.location);
         return jOut;
     }
 };

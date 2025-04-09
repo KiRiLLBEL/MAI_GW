@@ -14,8 +14,7 @@
 TEST(TestJsonSmoke, IdentifierSmoke)
 {
     const std::string input{"system"};
-    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result = lexy::parse<lang::grammar::Keyword>(strInput, lexy_ext::report_error);
+    const auto result = lang::grammar::ParseTest<lang::grammar::Keyword>(input);
     EXPECT_TRUE(result.has_value());
     const auto jsonResult = lang::ast::json::Serialize(result.value());
     EXPECT_TRUE(not jsonResult.empty());
@@ -25,8 +24,7 @@ TEST(TestJsonSmoke, IdentifierSmoke)
 TEST(TestJsonSmoke, SetSmoke)
 {
     const std::string input{R"([134, true, "hello"])"};
-    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result = lexy::parse<lang::grammar::Set>(strInput, lexy_ext::report_error);
+    const auto result = lang::grammar::ParseTest<lang::grammar::Set>(input);
     EXPECT_TRUE(result.has_value());
     const auto jsonResult = lang::ast::json::Serialize(result.value());
     EXPECT_TRUE(not jsonResult.empty());
@@ -36,8 +34,7 @@ TEST(TestJsonSmoke, SetSmoke)
 TEST(TestJsonSmoke, VariableSmoke)
 {
     const std::string input{"Hello"};
-    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result = lexy::parse<lang::grammar::Variable>(strInput, lexy_ext::report_error);
+    const auto result = lang::grammar::ParseTest<lang::grammar::IdentifierExpr>(input);
     EXPECT_TRUE(result.has_value());
     const auto jsonResult = lang::ast::json::Serialize(result.value());
     EXPECT_TRUE(not jsonResult.empty());
@@ -47,9 +44,7 @@ TEST(TestJsonSmoke, VariableSmoke)
 TEST(TestJsonSmoke, FunctionArgsSmoke)
 {
     const std::string input{"testing_funct(2, hello, [123, true])"};
-    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result =
-        lexy::parse<lang::grammar::ExpressionProduct>(strInput, lexy_ext::report_error);
+    const auto result = lang::grammar::ParseTest<lang::grammar::ExpressionProduct>(input);
     EXPECT_TRUE(result.has_value());
     const auto jsonResult = lang::ast::json::Serialize(result.value());
     EXPECT_TRUE(not jsonResult.empty());
@@ -59,9 +54,7 @@ TEST(TestJsonSmoke, FunctionArgsSmoke)
 TEST(TestJsonSmoke, TernarySmoke)
 {
     const std::string input{"true ? false : true"};
-    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result =
-        lexy::parse<lang::grammar::ExpressionProduct>(strInput, lexy_ext::report_error);
+    const auto result = lang::grammar::ParseTest<lang::grammar::ExpressionProduct>(input);
     EXPECT_TRUE(result.has_value());
     const auto jsonResult = lang::ast::json::Serialize(result.value());
     EXPECT_TRUE(not jsonResult.empty());
@@ -71,9 +64,7 @@ TEST(TestJsonSmoke, TernarySmoke)
 TEST(TestJsonSmoke, AddSmoke)
 {
     const std::string input{"2 + 4"};
-    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result =
-        lexy::parse<lang::grammar::ExpressionProduct>(strInput, lexy_ext::report_error);
+    const auto result = lang::grammar::ParseTest<lang::grammar::ExpressionProduct>(input);
     EXPECT_TRUE(result.has_value());
     const auto jsonResult = lang::ast::json::Serialize(result.value());
     EXPECT_TRUE(not jsonResult.empty());
@@ -83,8 +74,7 @@ TEST(TestJsonSmoke, AddSmoke)
 TEST(TestJsonSmoke, AssignmentSmoke)
 {
     const std::string input{"x = 5"};
-    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result = lexy::parse<lang::grammar::BodyStatement>(strInput, lexy_ext::report_error);
+    const auto result = lang::grammar::ParseTest<lang::grammar::BodyStatement>(input);
     EXPECT_TRUE(result.has_value());
     const auto jsonResult = lang::ast::json::Serialize(result.value());
     EXPECT_TRUE(not jsonResult.empty());
@@ -94,8 +84,7 @@ TEST(TestJsonSmoke, AssignmentSmoke)
 TEST(TestJsonSmoke, QuantifierSmoke)
 {
     const std::string input{R"(all { s1 in system: s1.tech in ["lst", "gif"] })"};
-    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result = lexy::parse<lang::grammar::Quantifier>(strInput, lexy_ext::report_error);
+    const auto result = lang::grammar::ParseTest<lang::grammar::Quantifier>(input);
     EXPECT_TRUE(result.has_value());
     const auto jsonResult = lang::ast::json::Serialize(result.value());
     EXPECT_TRUE(not jsonResult.empty());
@@ -114,8 +103,7 @@ TEST(TestJsonSmoke, ConditionalSmoke)
                     { t2 in container: false}
     }
     )"};
-    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result = lexy::parse<lang::grammar::Quantifier>(strInput, lexy_ext::report_error);
+    const auto result = lang::grammar::ParseTest<lang::grammar::Quantifier>(input);
     EXPECT_TRUE(result.has_value());
     const auto jsonResult = lang::ast::json::Serialize(result.value());
     EXPECT_TRUE(not jsonResult.empty());
@@ -152,8 +140,7 @@ TEST(TestJsonSmoke, RuleSmoke)
         }
     }
     )"};
-    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result = lexy::parse<lang::grammar::RuleDecl>(strInput, lexy_ext::report_error);
+    const auto result = lang::grammar::ParseTest<lang::grammar::RuleDecl>(input);
     EXPECT_TRUE(result.has_value());
     const auto jsonResult = lang::ast::json::Serialize(result.value());
     EXPECT_TRUE(not jsonResult.empty());

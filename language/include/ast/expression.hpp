@@ -8,6 +8,13 @@
 namespace lang::ast
 {
 
+struct NodeLocation
+{
+    std::size_t line = 0;
+    std::size_t column = 0;
+    std::size_t length = 0;
+};
+
 enum class ExprType
 {
     PLUS,
@@ -99,6 +106,7 @@ using ExpressionPtr = std::unique_ptr<Expression>;
 template <KeywordSets K> struct KeywordExpr
 {
     static constexpr KeywordSets kind = K;
+    NodeLocation location;
 };
 
 template <typename T> struct LiteralExpr
@@ -114,6 +122,7 @@ struct SetExpr
 struct VariableExpr
 {
     std::string name;
+    NodeLocation location;
 };
 
 template <ExprType> struct AccessExpr
@@ -131,6 +140,7 @@ struct CallExpr
 {
     std::string functionName;
     std::vector<ExpressionPtr> args;
+    NodeLocation location;
 };
 
 template <ExprType> struct MultExpr

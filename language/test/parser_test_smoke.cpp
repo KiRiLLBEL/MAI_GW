@@ -21,8 +21,7 @@ template <typename T> inline auto ParseMultiple(const auto &arrayInput) -> void
 {
     for (const auto &input : arrayInput)
     {
-        const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-        const auto result = lexy::parse<T>(strInput, lexy_ext::report_error);
+        const auto result = lang::grammar::ParseTest<T>(std::string{input});
         EXPECT_TRUE(result.has_value());
     }
 }
@@ -30,16 +29,14 @@ template <typename T> inline auto ParseMultiple(const auto &arrayInput) -> void
 TEST(ParserTestSmoke, IdentifierSmoke)
 {
     const std::string input{"hello_12_3"};
-    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result = lexy::parse<lang::grammar::Identifier>(strInput, lexy_ext::report_error);
+    const auto result = lang::grammar::ParseTest<lang::grammar::Identifier>(input);
     EXPECT_TRUE(result.has_value());
 }
 
 TEST(ParserTestSmoke, StringSmoke)
 {
     const std::string input{R"("hello_12_3")"};
-    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result = lexy::parse<lang::grammar::String>(strInput, lexy_ext::report_error);
+    const auto result = lang::grammar::ParseTest<lang::grammar::String>(input);
     EXPECT_TRUE(result.has_value());
     EXPECT_EQ("hello_12_3", result.value());
 }
@@ -48,13 +45,10 @@ TEST(ParserTestSmoke, BooleanSmoke)
 {
     const std::string inputTrue{"true"};
     const std::string inputFalse{"false"};
-    auto strInput = lexy::string_input<lexy::utf8_encoding>(inputTrue);
-    auto result = lexy::parse<lang::grammar::Boolean>(strInput, lexy_ext::report_error);
+    auto result = lang::grammar::ParseTest<lang::grammar::Boolean>(inputTrue);
     EXPECT_TRUE(result.has_value());
     EXPECT_EQ(true, result.value());
-
-    strInput = lexy::string_input<lexy::utf8_encoding>(inputFalse);
-    result = lexy::parse<lang::grammar::Boolean>(strInput, lexy_ext::report_error);
+    result = lang::grammar::ParseTest<lang::grammar::Boolean>(inputFalse);
     EXPECT_TRUE(result.has_value());
     EXPECT_EQ(false, result.value());
 }
@@ -62,8 +56,7 @@ TEST(ParserTestSmoke, BooleanSmoke)
 TEST(ParserTestSmoke, NumberSmoke)
 {
     const std::string input{"145267"};
-    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result = lexy::parse<lang::grammar::Number>(strInput, lexy_ext::report_error);
+    const auto result = lang::grammar::ParseTest<lang::grammar::Number>(input);
     EXPECT_TRUE(result.has_value());
     EXPECT_EQ(145267, result.value());
 }
@@ -77,8 +70,7 @@ TEST(ParserTestSmoke, LiteralSimpleSmoke)
 TEST(ParserTestSmoke, SetSmoke)
 {
     const std::string input{R"([145267, "ok"  , true])"};
-    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result = lexy::parse<lang::grammar::Set>(strInput, lexy_ext::report_error);
+    const auto result = lang::grammar::ParseTest<lang::grammar::Set>(input);
     EXPECT_TRUE(result.has_value());
     EXPECT_FALSE(result.errors());
     const auto &parsedVector = std::get<lang::ast::SetPtr>(*result.value())->items;
@@ -95,8 +87,7 @@ TEST(ParserTestSmoke, LiteralSmoke)
 TEST(ParserTestSmoke, VariableSmoke)
 {
     const std::string input{"test_name_132"};
-    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result = parse<lang::grammar::Variable>(strInput, lexy_ext::report_error);
+    const auto result = lang::grammar::ParseTest<lang::grammar::IdentifierExpr>(input);
     EXPECT_TRUE(result.has_value());
     EXPECT_FALSE(result.errors());
     const auto &parsedVariable = *std::get<lang::ast::VariablePtr>(*result.value());
@@ -106,8 +97,7 @@ TEST(ParserTestSmoke, VariableSmoke)
 TEST(ParserTestSmoke, FunctionArgsSmoke)
 {
     const std::string input{R"((525,   "test",   true, [145267]))"};
-    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result = lexy::parse<lang::grammar::FuncArgs>(strInput, lexy_ext::report_error);
+    const auto result = lang::grammar::ParseTest<lang::grammar::FuncArgs>(input);
     EXPECT_TRUE(result.has_value());
     EXPECT_FALSE(result.errors());
     const auto &parsedVector = result.value();
@@ -117,17 +107,14 @@ TEST(ParserTestSmoke, FunctionArgsSmoke)
 TEST(ParserTestSmoke, KeywordSmoke)
 {
     const std::string input{"system"};
-    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result = lexy::parse<lang::grammar::Keyword>(strInput, lexy_ext::report_error);
+    const auto result = lang::grammar::ParseTest<lang::grammar::Keyword>(input);
     EXPECT_TRUE(result.has_value());
 }
 
 TEST(ParserTestSmoke, UnaryExprSmoke)
 {
     const std::string input{"not true"};
-    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result =
-        lexy::parse<lang::grammar::ExpressionProduct>(strInput, lexy_ext::report_error);
+    const auto result = lang::grammar::ParseTest<lang::grammar::ExpressionProduct>(input);
     EXPECT_TRUE(result.has_value());
     EXPECT_FALSE(result.errors());
     const auto &parsedUnary = *std::get<lang::ast::NegationPtr>(*result.value());
@@ -138,9 +125,7 @@ TEST(ParserTestSmoke, UnaryExprSmoke)
 TEST(ParserTestSmoke, FunctionCallSmoke)
 {
     const std::string input{"route(s1, s2)"};
-    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result =
-        lexy::parse<lang::grammar::ExpressionProduct>(strInput, lexy_ext::report_error);
+    const auto result = lang::grammar::ParseTest<lang::grammar::ExpressionProduct>(input);
     ASSERT_TRUE(result.has_value());
     EXPECT_FALSE(result.errors());
     const auto &parsedProperty = *std::get<lang::ast::CallPtr>(*result.value());
@@ -150,9 +135,7 @@ TEST(ParserTestSmoke, FunctionCallSmoke)
 TEST(ParserTestSmoke, PropertySmoke)
 {
     const std::string input{"test.!op"};
-    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result =
-        lexy::parse<lang::grammar::ExpressionProduct>(strInput, lexy_ext::report_error);
+    const auto result = lang::grammar::ParseTest<lang::grammar::ExpressionProduct>(input);
     ASSERT_TRUE(result.has_value());
     EXPECT_FALSE(result.errors());
     const auto &parsedProperty = *std::get<lang::ast::SafeAccessExprPtr>(*result.value());
@@ -162,9 +145,7 @@ TEST(ParserTestSmoke, PropertySmoke)
 TEST(ParserTestSmoke, TernarySmoke)
 {
     const std::string input{"true ? false : true"};
-    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result =
-        lexy::parse<lang::grammar::ExpressionProduct>(strInput, lexy_ext::report_error);
+    const auto result = lang::grammar::ParseTest<lang::grammar::ExpressionProduct>(input);
     EXPECT_TRUE(result.has_value());
     EXPECT_FALSE(result.errors());
     const auto &parsedProperty = *std::get<lang::ast::TernaryExprPtr>(*result.value());
@@ -175,9 +156,7 @@ TEST(ParserTestSmoke, TernarySmoke)
 TEST(ParserTestSmoke, BinaryExprSmoke)
 {
     const std::string input{"2 + 2"};
-    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result =
-        lexy::parse<lang::grammar::ExpressionProduct>(strInput, lexy_ext::report_error);
+    const auto result = lang::grammar::ParseTest<lang::grammar::ExpressionProduct>(input);
     EXPECT_TRUE(result.has_value());
     EXPECT_FALSE(result.errors());
     std::get<lang::ast::AddPtr>(*result.value());
@@ -186,8 +165,7 @@ TEST(ParserTestSmoke, BinaryExprSmoke)
 TEST(ParserTestSmoke, AssignmentSmoke)
 {
     const std::string input{"x = 5"};
-    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result = lexy::parse<lang::grammar::BodyStatement>(strInput, lexy_ext::report_error);
+    const auto result = lang::grammar::ParseTest<lang::grammar::BodyStatement>(input);
     EXPECT_TRUE(result.has_value());
     EXPECT_FALSE(result.errors());
     const auto &parsedProperty = *std::get<lang::ast::AssignmentStatementPtr>(*result.value());
@@ -197,8 +175,7 @@ TEST(ParserTestSmoke, AssignmentSmoke)
 TEST(ParserTestSmoke, QuantifierSmoke)
 {
     const std::string input{R"(all { s1 in system: s1.tech in ["lst", "gif"] })"};
-    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result = lexy::parse<lang::grammar::Quantifier>(strInput, lexy_ext::report_error);
+    const auto result = lang::grammar::ParseTest<lang::grammar::Quantifier>(input);
     EXPECT_TRUE(result.has_value());
     EXPECT_FALSE(result.errors());
 }
@@ -215,8 +192,7 @@ TEST(ParserTestSmoke, ConditionalSmoke)
                     { t2 in container: false}
     }
     )"};
-    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result = lexy::parse<lang::grammar::Quantifier>(strInput, lexy_ext::report_error);
+    const auto result = lang::grammar::ParseTest<lang::grammar::Quantifier>(input);
     EXPECT_TRUE(result.has_value());
     EXPECT_FALSE(result.errors());
 }
@@ -233,8 +209,7 @@ TEST(ParserTestSmoke, NestedQuantifierSmoke)
             }
         }
     )"};
-    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result = lexy::parse<lang::grammar::Quantifier>(strInput, lexy_ext::report_error);
+    const auto result = lang::grammar::ParseTest<lang::grammar::Quantifier>(input);
     EXPECT_TRUE(result.has_value());
     EXPECT_FALSE(result.errors());
 }
@@ -266,8 +241,7 @@ TEST(ParserTestSmoke, BlockSmoke)
             s1.tech in ["go"]
     }
     )"};
-    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result = lexy::parse<lang::grammar::Block>(strInput, lexy_ext::report_error);
+    const auto result = lang::grammar::ParseTest<lang::grammar::Block>(input);
     EXPECT_TRUE(result.has_value());
     EXPECT_FALSE(result.errors());
 }
@@ -302,8 +276,7 @@ TEST(ParserTestSmoke, RuleSmoke)
         }
     }
     )"};
-    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-    const auto result = lexy::parse<lang::grammar::RuleDecl>(strInput, lexy_ext::report_error);
+    const auto result = lang::grammar::ParseTest<lang::grammar::RuleDecl>(input);
     EXPECT_TRUE(result.has_value());
     EXPECT_FALSE(result.errors());
 }

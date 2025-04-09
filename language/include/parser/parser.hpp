@@ -71,15 +71,23 @@ struct RuleDecl
         { return ast::Rule(std::move(name), std::move(desc), prio, std::move(block)); });
 };
 
-auto Parse(const std::string& input)
+auto Parse(const std::string &input)
 {
     const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
-    auto result = lexy::parse<lang::grammar::RuleDecl>(strInput, lexy_ext::report_error);
-    if(not result.has_value())
+    const CaptureLocation<decltype(strInput)> capture{strInput};
+    auto result = lexy::parse<lang::grammar::RuleDecl>(strInput, capture, lexy_ext::report_error);
+    if (not result.has_value())
     {
         throw std::runtime_error{"Failed parsing program"};
     }
     return result;
+}
+
+template <typename P> auto ParseTest(const std::string &input)
+{
+    const auto strInput = lexy::string_input<lexy::utf8_encoding>(input);
+    const CaptureLocation<decltype(strInput)> capture{strInput};
+    return lexy::parse<P>(strInput, capture, lexy_ext::report_error);
 }
 
 } // namespace lang::grammar

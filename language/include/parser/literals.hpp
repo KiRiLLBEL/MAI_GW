@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ast/expression.hpp>
+#include "ast/expression.hpp"
 
 #include <lexy/callback.hpp>
 #include <lexy/callback/adapter.hpp>
@@ -10,10 +10,7 @@
 #include <lexy/callback/object.hpp>
 #include <lexy/callback/string.hpp>
 #include <lexy/dsl.hpp>
-
-#include <memory>
-#include <string>
-#include <type_traits>
+#include <lexy/input_location.hpp>
 
 namespace lang::grammar
 {

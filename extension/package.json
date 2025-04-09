@@ -1,0 +1,18 @@
+{
+  "name": "my-language-project",
+  "version": "0.0.1",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "build": "npm run compile --workspace=client && npm run compile --workspace=server",
+    "watch:client": "npm run watch --workspace=client",
+    "watch:server": "npm run watch --workspace=server",
+    "watch": "concurrently \"npm run watch:client\" \"npm run watch:server\""
+  },
+  "devDependencies": {
+    "concurrently": "^7.0.0"
+  }
+}

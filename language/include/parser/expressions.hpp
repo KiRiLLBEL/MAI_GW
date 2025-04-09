@@ -1,6 +1,8 @@
 #pragma once
 
-#include <ast/expression.hpp>
+#include "ast/expression.hpp"
+#include <lexy/callback/string.hpp>
+#include <lexy/dsl/capture.hpp>
 #include <lexy/dsl/expression.hpp>
 #include <parser/identifiers.hpp>
 #include <parser/literals.hpp>
@@ -47,17 +49,6 @@ struct NestedExpr : lexy::transparent_production
     static constexpr auto value = lexy::forward<ast::ExpressionPtr>;
 };
 
-struct Variable : lexy::token_production
-{
-    static constexpr auto rule = dsl::p<Identifier>;
-    static constexpr auto value = lexy::callback<ast::ExpressionPtr>(
-        [](std::string &&varName) -> ast::ExpressionPtr
-        {
-            auto var = std::make_unique<ast::VariableExpr>(std::move(varName));
-            return std::make_unique<ast::Expression>(std::move(var));
-        });
-};
-
 struct FuncArgs : lexy::token_production
 {
     static constexpr auto rule = dsl::parenthesized.opt_list(
@@ -67,23 +58,28 @@ struct FuncArgs : lexy::token_production
 
 struct IdentifierExpr
 {
-    static constexpr auto rule = dsl::p<Identifier> >> dsl::opt(dsl::p<FuncArgs>);
-    static constexpr auto value = lexy::callback<ast::ExpressionPtr>(
-        [](std::string &&name, lexy::nullopt &&) -> ast::ExpressionPtr {
-            return std::make_unique<ast::Expression>(
-                std::make_unique<ast::VariableExpr>(std::move(name)));
-        },
-        [](std::string &&name, auto &&lst) -> ast::ExpressionPtr
-        {
-            return std::make_unique<ast::Expression>(
-                std::make_unique<ast::CallExpr>(std::move(name), std::move(lst)));
-        });
+    static constexpr auto rule = dsl::capture(dsl::p<Identifier>) >> dsl::opt(dsl::p<FuncArgs>);
+    static constexpr auto value = lexy::bind(
+        lexy::callback<ast::ExpressionPtr>(
+            [](const auto &capture, auto &&lex, std::string &&name,
+               lexy::nullopt &&) -> ast::ExpressionPtr
+            {
+                return std::make_unique<ast::Expression>(
+                    std::make_unique<ast::VariableExpr>(std::move(name), std::move(capture(lex))));
+            },
+            [](const auto &capture, auto &&lex, std::string &&name,
+               auto &&lst) -> ast::ExpressionPtr
+            {
+                return std::make_unique<ast::Expression>(std::make_unique<ast::CallExpr>(
+                    std::move(name), std::move(lst), std::move(capture(lex))));
+            }),
+        lexy::parse_state, lexy::values);
 };
 
 struct FactorExpr
 {
     static constexpr auto rule = dsl::parenthesized(dsl::p<NestedExpr>) | dsl::p<Keyword> |
-                                 dsl::p<Literal> | dsl::p<IdentifierExpr> | dsl::p<Variable>;
+                                 dsl::p<Literal> | dsl::p<IdentifierExpr>;
     static constexpr auto value = lexy::forward<ast::ExpressionPtr>;
 };
 
