@@ -111,15 +111,22 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Download built artifact (dsl-parser - debug preset)
+      - name: Download built artifact (dsl-parser - release preset)
         uses: actions/download-artifact@v4
         with:
-          name: Arch-latest-debug
+          name: Arch-latest-release
           path: artifacts
 
       - name: Copy dsl-parser binary to extension folder
         run: |
           cp artifacts/dsl-parser extension/
+
+      - name: Install extension dependencies
+        working-directory: extension
+        run: |
+          npm install
+          cd server && npm install
+          cd ../client && npm install
 
       - name: Package VS Code extension
         working-directory: extension
