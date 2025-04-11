@@ -152,7 +152,7 @@ public:
         static constexpr auto type = "call";
         nlohmann::json jOut;
         const auto view = expr.args | std::views::transform(Serializer<ExpressionPtr>{});
-        jOut["expression"] = type;
+        jOut["type"] = type;
         jOut["name"] = expr.functionName;
         jOut["args"] = nlohmann::json::array();
         for (const auto &item : view)

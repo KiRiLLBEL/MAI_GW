@@ -8,15 +8,12 @@
 #include <string>
 #include <string_view>
 
-// Подключите свои заголовочные файлы для парсера, транслятора и сериализатора.
-// Например:
 #include <json/serializer.hpp>
 #include <parser/parser.hpp>
 #include <translator/translator.hpp>
 
 namespace fs = std::filesystem;
 
-// Функция для обрезки пробелов по краям строки
 constexpr std::string Trim(std::string_view const input)
 {
     auto view = input | std::views::drop_while(isspace) | std::views::reverse |

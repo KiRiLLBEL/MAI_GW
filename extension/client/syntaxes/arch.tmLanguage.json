@@ -1,0 +1,36 @@
+{
+  "scopeName": "source.arch",
+  "name": "Arch",
+  "patterns": [
+    {
+      "name": "string.quoted.double.arch",
+      "begin": "\"",
+      "end": "\"",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.begin.arch"
+        }
+      },
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.end.arch"
+        }
+      },
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.arch"
+        }
+      ]
+    },
+    {
+      "name": "constant.numeric.arch",
+      "match": "\\b(0x[0-9A-Fa-f]+|\\d+(\\.\\d+)?([eE][-+]?\\d+)?)\\b"
+    },
+    {
+      "name": "keyword.control.arch",
+      "match": "\\b(?:not|rule|in|or|and|xor|all|exist|true|false|if|then|else|none|except|priority|description|system|container|component|code|deploy|infrastructure)\\b"
+    }
+  ],
+  "repository": {}
+}

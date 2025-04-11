@@ -8,6 +8,8 @@ enable_testing()
 
 include(FetchContent)
 
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+
 FetchContent_Declare(
     lexy 
     URL https://lexy.foonathan.net/download/lexy-src.zip

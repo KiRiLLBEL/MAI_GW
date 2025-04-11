@@ -1,18 +1,148 @@
 {
   "name": "my-language-project",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": true,
   "workspaces": [
     "client",
     "server"
   ],
+  "engines": {
+    "vscode": "^1.99.0"
+  },
+  "main": "./out/extension.js",
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onCommand:arch.run",
+    "onLanguage:arch"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "arch.run",
+        "title": "Run Arch: Execute DSL to Cypher and Send to Neo4j"
+      }
+    ],
+    "semanticTokenTypes": [
+      {
+        "id": "variable",
+        "description": "Переменная",
+        "superType": "variable"
+      },
+      {
+        "id": "function",
+        "description": "Функция",
+        "superType": "function"
+      },
+      {
+        "id": "superset",
+        "description": "Множество согласованное с архитектурой C4",
+        "superType": "namespace"
+      }
+    ],
+    "semanticTokenColorCustomizations": {
+      "enabled": true,
+      "rules": {
+        "variable": {
+          "foreground": "#FF0000",
+          "fontStyle": "underline"
+        },
+        "function": {
+          "foreground": "#00FF00",
+          "fontStyle": "underline"
+        },
+        "superset": {
+          "foreground": "#0000FF",
+          "fontStyle": "underline"
+        }
+      }
+    },
+    "languages": [
+      {
+        "id": "arch",
+        "aliases": [
+          "Arch",
+          "arch"
+        ],
+        "extensions": [
+          ".arch"
+        ],
+        "configuration": "./client/language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "arch",
+        "scopeName": "source.arch",
+        "path": "./client/syntaxes/arch.tmLanguage.json"
+      }
+    ],
+    "configurationDefaults": {
+      "[arch]": {
+        "editor.semanticHighlighting.enabled": true
+      }
+    },
+    "configuration": {
+      "type": "object",
+      "title": "Example configuration",
+      "properties": {
+        "ArchLanguageServer.maxNumberOfProblems": {
+          "scope": "resource",
+          "type": "number",
+          "default": 100,
+          "description": "Controls the maximum number of problems produced by the server."
+        },
+        "ArchLanguageServer.trace.server": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "Traces the communication between VS Code and the language server."
+        },
+        "ArchLanguageServer.neo4j.url": {
+          "type": "string",
+          "default": "bolt://localhost:7687",
+          "description": "URL для подключения к Neo4j."
+        },
+        "ArchLanguageServer.neo4j.username": {
+          "type": "string",
+          "default": "neo4j",
+          "description": "Имя пользователя для подключения к Neo4j."
+        },
+        "ArchLanguageServer.neo4j.password": {
+          "type": "string",
+          "default": "neo4j",
+          "description": "Пароль для подключения к Neo4j.",
+          "scope": "machine"
+        },
+        "ArchLanguageServer.dslParserPath": {
+          "type": "string",
+          "default": "",
+          "description": "Абсолютный путь до бинарного файла dsl-parser."
+        }
+      }
+    }
+  },
   "scripts": {
-    "build": "npm run compile --workspace=client && npm run compile --workspace=server",
-    "watch:client": "npm run watch --workspace=client",
-    "watch:server": "npm run watch --workspace=server",
-    "watch": "concurrently \"npm run watch:client\" \"npm run watch:server\""
+    "vscode:prepublish": "npm run compile",
+    "compile": "webpack --mode production",
+    "watch": "webpack --watch --mode development",
+    "lint": "eslint"
   },
   "devDependencies": {
-    "concurrently": "^7.0.0"
+    "concurrently": "^7.0.0",
+    "neo4j-driver": "^5.28.1",
+    "ts-loader": "^9.5.2",
+    "webpack": "^5.99.5",
+    "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {
+    "@types/vscode": "^1.99.1",
+    "vscode-languageclient": "^9.0.1"
   }
 }
