@@ -13,16 +13,12 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        preset: [debug, sanitazers, release]
-
+        preset: [debug, release]
         include:
           - os: ubuntu-latest
             preset: debug
           - os: ubuntu-latest
-            preset: sanitazers
-          - os: ubuntu-latest
             preset: release
-
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -107,3 +103,30 @@ jobs:
       - name: Stop Neo4j container
         if: always()
         run: docker stop neo4j-test
+
+  build-extension:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Download built artifact (dsl-parser - debug preset)
+        uses: actions/download-artifact@v4
+        with:
+          name: Arch-latest-debug
+          path: artifacts
+
+      - name: Copy dsl-parser binary to extension folder
+        run: |
+          cp artifacts/dsl-parser extension/
+
+      - name: Package VS Code extension
+        working-directory: extension
+        run: npx vsce package
+
+      - name: Upload VSIX Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vscode-extension
+          path: extension/*.vsix

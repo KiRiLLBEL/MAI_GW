@@ -80,7 +80,7 @@
     ],
     "configurationDefaults": {
       "[arch]": {
-        "editor.semanticHighlighting.enabled": true
+        "editor.semanticHighlighting.enabled": false
       }
     },
     "configuration": {
