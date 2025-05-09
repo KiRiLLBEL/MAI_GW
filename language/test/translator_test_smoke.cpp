@@ -198,7 +198,10 @@ TEST(TranslatorTestSmoke, ArticulationSmoke)
         description: "Hello world";
         priority: Info;
         all {
-            c in container: articulation(c)
+            c in container: failure_point(c):
+            all {
+                ci in instance(c): ci.instanceCount > 1
+            }
         }
     }
     )"};

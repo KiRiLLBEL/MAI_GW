@@ -61,7 +61,7 @@ exist {
 
 all {
 
-    s in system: exist(c in s)
+    s in system: exist { c in s: ... }
 
 }
 
@@ -79,9 +79,9 @@ all {
 
 Особые операторы:
 ```
-12. count{ set } - список элементов в листе, списке
-13. route{ <item1>, <item2> } - проверка, что связь существует между двумя списками
-14. <item> in route{ <item1>, <item2> }- связь осуществляется через такой-то узел
+12. count( set ) - список элементов в листе, списке
+13. route( <item1>, <item2> ) - проверка, что связь существует между двумя списками
+14. <item> in route( <item1>, <item2> )- связь осуществляется через такой-то узел
 15. all{ route(<item1>, <item2>) } - все связи существуют
 16. not route() - не существуют
 17. cross(set)
@@ -96,28 +96,19 @@ all {
   
 
 ```
-rule "Integration platform" {
-
-    all {
-
-        s1, s2 in system:
-
-        all {
-
-            s | route{ s1, s2 }: "Integration platform" in s.tags
-
-        }
-
-    }
-
-    except all {
-
-        s in system:
-
-            "Integration platform" in s.tags
-
-    }
-
+rule Platform {
+    description: "Test";
+    priority: Error;
+    all {
+        s1, s2 in system:
+        all {
+            s in route(s1, s2): "Integration platform" in s.tags
+        }
+    };
+    except all {
+        s1, s2 in system:
+            "Integration platform" in s1.tags xor "Integration platform" in s2.tags
+    }
 }
 ```
 
@@ -125,17 +116,13 @@ rule "Integration platform" {
 
 ```
 rule "DMZ" {
-
     all {
-
         d in deploy:
             "DMZ" == deploy.name:
-            all { c in d:
-		         "Database" in c.tags and c == none
-	        } 
-
+             all { c in d:
+	         "Database" in c.tags and c == none
+        } 
     }
-
 }
 ```
 
@@ -143,18 +130,10 @@ rule "DMZ" {
 
 ```
 rule "HOLD" {
-
-    lst = ["JS"]
-
-  
-
+    lst = ["JS"];
     all {
-
         c in containers:
-
             cross(c.tech, lst) == none
-
     }
-
 }
 ```

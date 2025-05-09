@@ -287,22 +287,41 @@ template <> struct SourceHandler<CallPtr>
     TranslationResult operator()(const std::vector<std::string> &args, const CallPtr &elem,
                                  TranslatorContext &ctx)
     {
-        std::string result = fmt::format("MATCH p = {}", Translator<CallPtr>{ctx}(elem));
-        for (const auto &arg : args)
+        if (elem->functionName == "route")
         {
-            result += fmt::format(" UNWIND nodes(p) AS {}", arg);
-            result += fmt::format(" WITH {}", arg);
-            ctx.variableTable.insert(arg);
-        }
-        result += " WHERE";
-        for (size_t i = 0; i < args.size(); ++i)
-        {
-            for (size_t j = i + 1; j < args.size(); ++j)
+            std::string result = fmt::format("MATCH p = {}", Translator<CallPtr>{ctx}(elem));
+            for (const auto &arg : args)
             {
-                result += fmt::format(" {} <> {} AND", args[i], args[j]);
+                result += fmt::format(" UNWIND nodes(p) AS {}", arg);
+                result += fmt::format(" WITH {}", arg);
+                ctx.variableTable.insert(arg);
             }
+            result += " WHERE";
+            for (size_t i = 0; i < args.size(); ++i)
+            {
+                for (size_t j = i + 1; j < args.size(); ++j)
+                {
+                    result += fmt::format(" {} <> {} AND", args[i], args[j]);
+                }
+            }
+
+            return result;
         }
-        return result;
+
+        if (elem->functionName == "instance")
+        {
+            if (args.empty())
+            {
+                throw std::runtime_error{"Empty selector list"};
+            }
+            std::string result = fmt::format("MATCH ({}:ContainerInstance)-{}", args.front(),
+                                             Translator<CallPtr>{ctx}(elem));
+            result += " WHERE";
+            ctx.variableTable.insert(args.front());
+            return result;
+        }
+
+        throw std::runtime_error{"Unsupported function"};
     }
 };
 

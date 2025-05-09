@@ -119,7 +119,7 @@ jobs:
 
       - name: Copy dsl-parser binary to extension folder
         run: |
-          cp artifacts/dsl-parser extension/
+          install -m 755 artifacts/language/build/dsl-parser extension/dsl-parser
 
       - name: Install extension dependencies
         working-directory: extension

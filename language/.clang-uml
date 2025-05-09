@@ -1,0 +1,13 @@
+diagrams:
+  ast_class:
+    type: class
+    using_namespace: lang::ast
+    glob:
+      - src/main.cpp
+    include:
+      namespaces:
+        - lang::ast
+    exclude:
+      namespaces:
+        - lang::ast::cypher
+        - lang::ast::json

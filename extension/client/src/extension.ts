@@ -153,13 +153,11 @@ function generateGraphHtmlFromRecords(records: Record[]): string {
     body { margin: 0; padding: 0; font-family: sans-serif; }
     #network { width: 100vw; height: 100vh; border: 1px solid lightgray; }
   </style>
-  <!-- Подключаем vis-network через CDN -->
   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 </head>
 <body>
   <div id="network"></div>
   <script type="text/javascript">
-    // Инициализируем узлы и ребра
     const nodes = new vis.DataSet(${JSON.stringify(nodes)});
     const edges = new vis.DataSet(${JSON.stringify(edges)});
 
@@ -170,7 +168,6 @@ function generateGraphHtmlFromRecords(records: Record[]): string {
       physics: { stabilization: true }
     };
 
-    // Создаем интерактивный граф
     new vis.Network(container, data, options);
   </script>
 </body>

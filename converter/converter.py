@@ -3,11 +3,13 @@ import argparse
 import json
 from neo4j import GraphDatabase
 
+
 def parse_args():
-    parser = argparse.ArgumentParser(description="Импорт модели Structurizr в Neo4j")
+    parser = argparse.ArgumentParser(
+        description="Импорт модели Structurizr в Neo4j")
     parser.add_argument(
-        "-f", "--file", 
-        required=True, 
+        "-f", "--file",
+        required=True,
         help="Путь к JSON файлу модели (например, workspace.json)"
     )
     parser.add_argument(
@@ -27,12 +29,14 @@ def parse_args():
     )
     return parser.parse_args()
 
+
 def parse_tags(tag_string):
     """
     Разбивает строку тегов, разделённых запятыми,
     обрезает пробелы по краям каждого элемента.
     """
     return [tag.strip() for tag in tag_string.split(",") if tag.strip()]
+
 
 def parse_technologies(tech_string):
     """
@@ -41,10 +45,12 @@ def parse_technologies(tech_string):
     """
     return [tech.strip() for tech in tech_string.split(",") if tech.strip()]
 
+
 def load_structurizr_model(json_path):
     with open(json_path, 'r', encoding='utf-8') as file:
         model = json.load(file)
     return model
+
 
 def extract_elements_and_relationships(model):
     """
@@ -107,6 +113,7 @@ def extract_elements_and_relationships(model):
 
     return elements, relationships
 
+
 def process_deployment_node(node, elements, relationships, parent_id=None):
     """
     Рекурсивно обрабатывает deploymentNode, 
@@ -166,7 +173,7 @@ def process_deployment_node(node, elements, relationships, parent_id=None):
             'description': 'InstanceOf',
             'type': 'INSTANCE_OF'
         })
-        
+
         relationships.extend(container_instance.get('relationships', []))
 
     for infra_node in node.get('infrastructureNodes', []):
@@ -181,6 +188,7 @@ def process_deployment_node(node, elements, relationships, parent_id=None):
             'environment': infra_node.get('environment', '')
         })
         relationships.extend(infra_node.get('relationships', []))
+
 
 def import_elements(tx, elements):
     """
@@ -207,7 +215,8 @@ def import_elements(tx, elements):
         instance_count = element.get('instanceCount', None)
 
         if element_type not in allowed_labels:
-            print(f"Предупреждение: неизвестный тип узла '{element_type}'. Узел пропущен.")
+            print(
+                f"Предупреждение: неизвестный тип узла '{element_type}'. Узел пропущен.")
             continue
 
         query = (
@@ -248,6 +257,7 @@ def import_elements(tx, elements):
                 child_id=element_id
             )
 
+
 def import_relationships(tx, relationships):
     """
     Создаёт (MERGE) связи в графе.
@@ -256,7 +266,8 @@ def import_relationships(tx, relationships):
 
     for relationship in relationships:
         source_id = relationship.get('sourceId') or relationship.get('source')
-        target_id = relationship.get('destinationId') or relationship.get('target')
+        target_id = relationship.get(
+            'destinationId') or relationship.get('target')
         description = relationship.get('description', '')
         technology = relationship.get('technology', '')
         properties = relationship.get('properties', {})
@@ -268,7 +279,8 @@ def import_relationships(tx, relationships):
             continue
 
         if rel_type not in allowed_rel_types:
-            print(f"Предупреждение: неизвестный тип отношения '{rel_type}'. Используется 'RELATES_TO'.")
+            print(
+                f"Предупреждение: неизвестный тип отношения '{rel_type}'. Используется 'RELATES_TO'.")
             rel_type = 'RELATES_TO'
 
         if rel_id:
@@ -303,6 +315,7 @@ def import_relationships(tx, relationships):
 
         tx.run(query, **params)
 
+
 def create_graph_projection(tx):
     """
     Создаёт проекцию графа для использования в GDS и запускает алгоритм поиска точек сочленения.
@@ -310,7 +323,7 @@ def create_graph_projection(tx):
     """
     # Удаляем существующую проекцию, если она есть
     tx.run("CALL gds.graph.drop('Graph', false) YIELD graphName")
-    
+
     projection_query = """
     CALL gds.graph.project(
       'Graph',
@@ -336,12 +349,13 @@ def create_graph_projection(tx):
     RETURN articulationPointCount
     """
     tx.run(projection_query)
-    
+
+
 def main():
     args = parse_args()
 
     driver = GraphDatabase.driver(
-        args.neo4j_uri, 
+        args.neo4j_uri,
         auth=(args.neo4j_user, args.neo4j_password)
     )
 
@@ -355,6 +369,7 @@ def main():
 
     driver.close()
     print("Success")
+
 
 if __name__ == "__main__":
     main()

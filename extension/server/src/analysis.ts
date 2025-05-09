@@ -2,8 +2,8 @@ import {Diagnostic, DiagnosticSeverity} from 'vscode-languageserver';
 export async function performSemanticAnalysis(
     ast: any, diagnostics: Diagnostic[],
     scopeStack: Array<Set<string>>): Promise<void> {
-  const validFunctions =
-      new Set<string>([ 'route', 'cross', 'union', 'articulation' ]);
+  const validFunctions = new Set<string>(
+      [ 'route', 'cross', 'union', 'failure_point', 'instance' ]);
 
   function isDeclared(name: string): boolean {
     for (let i = scopeStack.length - 1; i >= 0; i--) {
