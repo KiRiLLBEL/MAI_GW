@@ -4,11 +4,14 @@ rule Test {
     all {
         s1, s2 in system:
         all {
-            s in route(s1, s2): "Integration platform" in s.tags
+            s in route(s1, s2):
+                "Integration platform" in s.tags
         }
     };
     except all {
         s1, s2 in system:
-            "Integration platform" in s1.tags xor "Integration platform" in s2.tags
+            "Integration platform" in s1.tags 
+                xor 
+            "Integration platform" in s2.tags
     }
 }
