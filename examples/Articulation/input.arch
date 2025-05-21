@@ -5,7 +5,7 @@ rule Articulation {
         c in container: failure_point(c):
         all {
             ci in instance(c): 
-                si.instanceCount > 1
+                сi.instanceCount > 1
         }
     }
 }
