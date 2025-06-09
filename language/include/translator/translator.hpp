@@ -216,8 +216,9 @@ public:
     using TranslatorBase::TranslatorBase;
     TranslationResult operator()(const T<U> &expr) const
     {
-        return fmt::format(fmt::runtime(OperatorMap(U)), Translator<ExpressionPtr>{ctx}(expr.left),
-                           Translator<ExpressionPtr>{ctx}(expr.right));
+        const auto left = Translator<ExpressionPtr>{ctx}(expr.left);
+        const auto right = Translator<ExpressionPtr>{ctx}(expr.right);
+        return fmt::format(fmt::runtime(OperatorMap(U)), left, right);
     }
 };
 
@@ -227,10 +228,10 @@ public:
     using TranslatorBase::TranslatorBase;
     TranslationResult operator()(const TernaryExpr &expr) const
     {
-
-        return fmt::format(ternaryFormat, Translator<ExpressionPtr>{ctx}(expr.condition),
-                           Translator<ExpressionPtr>{ctx}(expr.thenExpr),
-                           Translator<ExpressionPtr>{ctx}(expr.elseExpr));
+        const auto cond = Translator<ExpressionPtr>{ctx}(expr.condition);
+        const auto then = Translator<ExpressionPtr>{ctx}(expr.thenExpr);
+        const auto els = Translator<ExpressionPtr>{ctx}(expr.elseExpr);
+        return fmt::format(ternaryFormat, cond, then, els);
     }
 };
 
@@ -242,8 +243,8 @@ public:
     {
         ctx.variableTable.insert(stmt.name);
         ctx.variableType[stmt.name] = KeywordSets::NONE;
-        return fmt::format(withAssignmentFormat, Translator<ExpressionPtr>{ctx}(stmt.valueExpr),
-                           stmt.name);
+        const auto value = Translator<ExpressionPtr>{ctx}(stmt.valueExpr);
+        return fmt::format(withAssignmentFormat, value, stmt.name);
     }
 };
 
@@ -414,25 +415,26 @@ public:
                 {
                     if (ctx.quantifierLevel == 1 and ctx.exceptRule)
                     {
+                        const auto predicate = Translator<StatementExpressionPtr>{ctx}(pred->expr);
+                        const auto quant = Translator<QuantifierPtr>{ctx}(pred->quant);
                         return fmt::format(fmt::runtime(QuantifierExceptMap(Q)),
-                                           Translator<StatementExpressionPtr>{ctx}(pred->expr) +
-                                               " AND ",
-                                           Translator<QuantifierPtr>{ctx}(pred->quant));
+                                           predicate + " AND ", quant);
                     }
                     if (ctx.quantifierLevel == 1)
                     {
                         ctx.returns = stmt.identifiersList;
-                        return fmt::format(
-                            fmt::runtime(QuantifierStartMap(Q)),
-                            SourceHandler<T>{}(stmt.identifiersList, stmt.source, ctx),
-                            Translator<StatementExpressionPtr>{ctx}(pred->expr) + " AND ",
-                            Translator<QuantifierPtr>{ctx}(pred->quant));
+                        const auto source =
+                            SourceHandler<T>{}(stmt.identifiersList, stmt.source, ctx);
+                        const auto expr = Translator<StatementExpressionPtr>{ctx}(pred->expr);
+                        const auto quant = Translator<QuantifierPtr>{ctx}(pred->quant);
+                        return fmt::format(fmt::runtime(QuantifierStartMap(Q)), source,
+                                           expr + " AND ", quant);
                     }
-                    return fmt::format(fmt::runtime(QuantifierMap(Q)),
-                                       SourceHandler<T>{}(stmt.identifiersList, stmt.source, ctx),
-                                       Translator<StatementExpressionPtr>{ctx}(pred->expr) +
-                                           " AND ",
-                                       Translator<QuantifierPtr>{ctx}(pred->quant));
+                    const auto source = SourceHandler<T>{}(stmt.identifiersList, stmt.source, ctx);
+                    const auto expr = Translator<StatementExpressionPtr>{ctx}(pred->expr);
+                    const auto quant = Translator<QuantifierPtr>{ctx}(pred->quant);
+                    return fmt::format(fmt::runtime(QuantifierMap(Q)), source, expr + " AND ",
+                                       quant);
                 }
                 if (ctx.quantifierLevel == 1 and ctx.exceptRule)
                 {
@@ -441,14 +443,14 @@ public:
                 }
                 if (ctx.quantifierLevel == 1)
                 {
+                    const auto source = SourceHandler<T>{}(stmt.identifiersList, stmt.source, ctx);
+                    const auto predicate = Translator<PredicatePtr>{ctx}(stmt.predicate);
                     ctx.returns = stmt.identifiersList;
-                    return fmt::format(fmt::runtime(QuantifierStartMap(Q)),
-                                       SourceHandler<T>{}(stmt.identifiersList, stmt.source, ctx),
-                                       "", Translator<PredicatePtr>{ctx}(stmt.predicate));
+                    return fmt::format(fmt::runtime(QuantifierStartMap(Q)), source, "", predicate);
                 }
-                return fmt::format(fmt::runtime(QuantifierMap(Q)),
-                                   SourceHandler<T>{}(stmt.identifiersList, stmt.source, ctx), "",
-                                   Translator<PredicatePtr>{ctx}(stmt.predicate));
+                const auto source = SourceHandler<T>{}(stmt.identifiersList, stmt.source, ctx);
+                const auto predicate = Translator<PredicatePtr>{ctx}(stmt.predicate);
+                return fmt::format(fmt::runtime(QuantifierMap(Q)), source, "", predicate);
             },
             *stmt.predicate);
     }
@@ -460,8 +462,9 @@ public:
     using TranslatorBase::TranslatorBase;
     TranslationResult operator()(const IfThen &stmt) const
     {
-        return fmt::format(ifThenFormat, Translator<ExpressionPtr>{ctx}(stmt.expr),
-                           Translator<PredicatePtr>{ctx}(stmt.then));
+        const auto expr = Translator<ExpressionPtr>{ctx}(stmt.expr);
+        const auto then = Translator<PredicatePtr>{ctx}(stmt.then);
+        return fmt::format(ifThenFormat, expr, then);
     }
 };
 
@@ -471,9 +474,10 @@ public:
     using TranslatorBase::TranslatorBase;
     TranslationResult operator()(const IfThenElse &stmt) const
     {
-        return fmt::format(ifThenElseFormat, Translator<ExpressionPtr>{ctx}(stmt.expr),
-                           Translator<PredicatePtr>{ctx}(stmt.then),
-                           Translator<PredicatePtr>{ctx}(stmt.els));
+        const auto expr = Translator<ExpressionPtr>{ctx}(stmt.expr);
+        const auto then = Translator<PredicatePtr>{ctx}(stmt.then);
+        const auto els = Translator<PredicatePtr>{ctx}(stmt.els);
+        return fmt::format(ifThenElseFormat, expr, then, els);
     }
 };
 
@@ -493,8 +497,9 @@ public:
     using TranslatorBase::TranslatorBase;
     TranslationResult operator()(const FilteredStatement &stmt) const
     {
-        return fmt::format("{} AND {}", Translator<StatementExpressionPtr>{ctx}(stmt.expr),
-                           Translator<QuantifierPtr>{ctx}(stmt.quant));
+        const auto expr = Translator<StatementExpressionPtr>{ctx}(stmt.expr);
+        const auto quant = Translator<QuantifierPtr>{ctx}(stmt.quant);
+        return fmt::format("{} AND {}", expr, quant);
     }
 };
 

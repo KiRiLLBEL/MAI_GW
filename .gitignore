@@ -1,5 +1,6 @@
 .structurizr
 .venv
+*.mdc
 build
 .vscode
 .cache
